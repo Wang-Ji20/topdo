@@ -1,4 +1,0 @@
-- [ ] crlf
-- [x] mixed
-
-- [ ] last

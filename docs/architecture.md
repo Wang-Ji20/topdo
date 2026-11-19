@@ -23,16 +23,13 @@ plasmoid/               the badge and popup in the top bar (QML)
 directly. Its central rule: rendering an unchanged document gives back the
 original text byte for byte.
 
-A `Document` keeps the file as raw bytes, split into lines. Each `Line`
-holds its text and its own line ending, and the document remembers whether
-the file started with a byte order mark. Rendering joins these back
-together, so the round trip is exact even for mixed line endings or bytes
-that aren't valid UTF-8:
+A `Document` is the file's text as a list of lines, without line endings.
+Rendering joins them with `\n` and adds a final newline:
 
 ```
-bytes:  "- [ ] a\r\n- [x] b"
-lines:  { text "- [ ] a", ending "\r\n" }
-        { text "- [x] b", ending ""     }
+file:   "- [ ] a\r\n- [x] b"
+lines:  "- [ ] a", "- [x] b"
+file:   "- [ ] a\n- [x] b\n"     (written back)
 ```
 
 **store** owns the file on disk. It reads the file, applies an edit through

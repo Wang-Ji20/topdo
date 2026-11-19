@@ -1,32 +1,22 @@
 #pragma once
 
 #include <QByteArray>
-#include <QList>
+#include <QStringList>
 
 namespace topdo {
 
-// One line of a todo file. The line ending is kept apart from the text, so that rendering gives
-// back exactly the bytes that were read, whatever mix of endings the file has.
-struct Line {
-    QByteArray text;   // without the line ending
-    QByteArray ending; // "\n", "\r\n", or empty for a last line that has none
-
-    friend bool operator==(const Line &, const Line &) = default;
-};
-
-// A todo file as read from disk; see docs/design/format.md. It holds bytes, not decoded text, so
-// that a file that isn't valid UTF-8 still survives a round trip unchanged.
+// A todo file as text, one entry per line, without line endings; see docs/design/format.md.
 struct Document {
-    bool hasByteOrderMark = false;
-    QList<Line> lines;
+    QStringList lines;
 
     friend bool operator==(const Document &, const Document &) = default;
 };
 
-// Splits a todo file into lines. render(parse(bytes)) == bytes for every input.
+// Reads a UTF-8 todo file. Accepts "\n" and "\r\n" line endings.
 Document parse(const QByteArray &bytes);
 
-// Joins the lines back into the bytes of a todo file.
+// Writes the document as UTF-8 with "\n" line endings and a final newline.
+// render(parse(bytes)) == bytes for every file already in that form.
 QByteArray render(const Document &document);
 
 } // namespace topdo

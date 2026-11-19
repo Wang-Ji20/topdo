@@ -11,8 +11,6 @@ QByteArray pick(QRandomGenerator &random, const QByteArrayList &choices) {
     return choices.at(index);
 }
 
-bool chance(QRandomGenerator &random, int oneIn) { return random.bounded(oneIn) == 0; }
-
 QByteArray randomText(QRandomGenerator &random) {
     static const QByteArrayList words = {
         "Write",
@@ -28,9 +26,6 @@ QByteArray randomText(QRandomGenerator &random) {
         "`code`",
         "*stars*",
         "\t",
-        "end\rof",
-        "\xff\xfe",
-        "\xc3",
     };
     const int count = random.bounded(6);
     QByteArrayList chosen;
@@ -74,14 +69,11 @@ QByteArray randomLine(QRandomGenerator &random) {
 } // namespace
 
 QByteArray randomTodoFile(QRandomGenerator &random) {
-    QByteArray file = chance(random, 8) ? QByteArray("\xEF\xBB\xBF") : QByteArray();
+    QByteArray file;
     const int lineCount = random.bounded(30);
     for (int i = 0; i < lineCount; ++i) {
         file.append(randomLine(random));
-        file.append(pick(random, {"\n", "\n", "\n", "\r\n"}));
-    }
-    if (chance(random, 4)) {
-        file.append(randomLine(random)); // a last line without a line ending
+        file.append('\n');
     }
     return file;
 }

@@ -5,9 +5,6 @@
 #include <QFile>
 #include <QTest>
 
-using topdo::Document;
-using topdo::Line;
-
 namespace {
 
 // Seed for the property tests: TOPDO_SEED replays a failure, otherwise each run picks a new one.
@@ -33,39 +30,29 @@ class TestDocument : public QObject {
   private Q_SLOTS:
     void splitsLines_data() {
         QTest::addColumn<QByteArray>("input");
-        QTest::addColumn<bool>("byteOrderMark");
-        QTest::addColumn<QByteArrayList>("texts");
-        QTest::addColumn<QByteArrayList>("endings");
+        QTest::addColumn<QStringList>("lines");
 
-        QTest::newRow("empty") << QByteArray() << false << QByteArrayList{} << QByteArrayList{};
-        QTest::newRow("one line") << QByteArray("a\n") << false << QByteArrayList{"a"}
-                                  << QByteArrayList{"\n"};
-        QTest::newRow("no final newline")
-            << QByteArray("a\nb") << false << QByteArrayList{"a", "b"} << QByteArrayList{"\n", ""};
-        QTest::newRow("mixed endings")
-            << QByteArray("a\r\nb\n\r\n") << false << QByteArrayList{"a", "b", ""}
-            << QByteArrayList{"\r\n", "\n", "\r\n"};
-        QTest::newRow("lone CR stays in the text")
-            << QByteArray("a\rb\n") << false << QByteArrayList{"a\rb"} << QByteArrayList{"\n"};
+        QTest::newRow("empty") << QByteArray() << QStringList{};
+        QTest::newRow("one line") << QByteArray("a\n") << QStringList{"a"};
+        QTest::newRow("blank lines") << QByteArray("a\n\n\nb\n") << QStringList{"a", "", "", "b"};
+        QTest::newRow("no final newline") << QByteArray("a\nb") << QStringList{"a", "b"};
+        QTest::newRow("CRLF") << QByteArray("a\r\nb\r\n") << QStringList{"a", "b"};
+        QTest::newRow("UTF-8") << QByteArray("- [ ] 中文\n") << QStringList{"- [ ] 中文"};
         QTest::newRow("byte order mark") << QByteArray("\xEF\xBB\xBF"
                                                        "a\n")
-                                         << true << QByteArrayList{"a"} << QByteArrayList{"\n"};
+                                         << QStringList{"a"};
     }
 
     void splitsLines() {
         QFETCH(QByteArray, input);
-        QFETCH(bool, byteOrderMark);
-        QFETCH(QByteArrayList, texts);
-        QFETCH(QByteArrayList, endings);
+        QFETCH(QStringList, lines);
 
-        const Document document = topdo::parse(input);
+        QCOMPARE(topdo::parse(input).lines, lines);
+    }
 
-        QCOMPARE(document.hasByteOrderMark, byteOrderMark);
-        QCOMPARE(document.lines.size(), texts.size());
-        for (qsizetype i = 0; i < texts.size(); ++i) {
-            QCOMPARE(document.lines.at(i).text, texts.at(i));
-            QCOMPARE(document.lines.at(i).ending, endings.at(i));
-        }
+    void writesLfAndFinalNewline() {
+        const topdo::Document document = topdo::parse("a\r\nb");
+        QCOMPARE(topdo::render(document), QByteArray("a\nb\n"));
     }
 
     void roundTripsGoldenFiles() {

@@ -1,2 +1,0 @@
-- [ ] Latin-1 café
-- [ ] truncated Ã

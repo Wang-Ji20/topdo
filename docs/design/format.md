@@ -91,9 +91,10 @@ compare it against cmark-gfm on bullet lists.
    - into a file with no todos: at the end of the file.
 8. **Done todos stay where they are.** The popup collapses them into a
    "Done" group; the file doesn't change.
-9. **The file keeps its encoding and line endings.** topdo reads UTF-8 and
-   writes back the same line endings (LF or CRLF), byte order mark and
-   final newline that it read.
+9. **The file is UTF-8 text with `\n` line endings.** topdo also reads
+   `\r\n` endings and a byte order mark, but always writes `\n`, no byte
+   order mark, and a final newline. The content of each line stays as
+   written.
 
 ## Where the file lives
 
@@ -122,3 +123,4 @@ compare it against cmark-gfm on bullet lists.
 | One folder in a shared config file | Per-frontend settings: the widget and CLI can drift to different files |
 | Done todos stay in place | Move them to a `## Done` section: an edit then changes more than its line |
 | Markdown | todo.txt: no place for headings and notes; JSON: unpleasant to edit by hand |
+| Write `\n` endings and a final newline | Keep the file's own endings and byte order mark: complexity a hand-written todo file doesn't need |
