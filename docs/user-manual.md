@@ -5,25 +5,32 @@ manual grows with each feature.
 
 ## Install the build dependencies
 
-On openSUSE Tumbleweed:
+On openSUSE Tumbleweed, to build and run:
 
 ```sh
-sudo zypper install cmake ninja gcc-c++ clang \
-    kf6-extra-cmake-modules qt6-base-devel qt6-test-devel \
-    qt6-declarative-devel qt6-declarative-tools \
-    libplasma6-devel kf6-kirigami-devel plasma6-sdk \
+sudo zypper install cmake ninja gcc-c++ \
+    qt6-base-devel qt6-declarative-devel kf6-kwindowsystem-devel \
     google-poppins-fonts jetbrains-mono-fonts
+```
+
+To work on topdo, also:
+
+```sh
+sudo zypper install clang qt6-declarative-tools plasma6-sdk
 ```
 
 | Package | Gives |
 |---|---|
-| `kf6-extra-cmake-modules` | KDE's CMake helpers |
-| `qt6-base-devel`, `qt6-test-devel` | Qt Core and QTest |
-| `qt6-declarative-devel`, `qt6-declarative-tools` | QML, plus `qmlformat` and `qmllint` |
-| `libplasma6-devel`, `kf6-kirigami-devel` | The Plasma widget API and Kirigami |
-| `plasma6-sdk` | `plasmoidviewer`, to run the widget in a window |
+| `qt6-base-devel` | Qt Core, and QTest for the tests |
+| `qt6-declarative-devel` | QML and Qt Quick, and Qt Quick Test for the QML tests |
+| `kf6-kwindowsystem-devel` | `KWindowEffects`, to ask KWin for blur behind the panel |
 | `google-poppins-fonts`, `jetbrains-mono-fonts` | The widget's typefaces (needed to run it, not to build) |
 | `clang` | `clang-format` and `clang-tidy` |
+| `qt6-declarative-tools` | `qmlformat` and `qmllint` |
+| `plasma6-sdk` | `plasmoidviewer`, to run the widget in a window |
+
+The widget also uses Plasma's and Kirigami's QML modules, which every Plasma
+desktop has.
 
 ## Build and test
 
