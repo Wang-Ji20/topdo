@@ -1,41 +1,11 @@
 #include "todos.h"
+#include "todoline.h"
 
 #include <QRegularExpression>
 
 namespace topdo {
 
 namespace {
-
-constexpr int TabWidth = 4;
-
-bool isFence(const QString &line) {
-    const QString trimmed = line.trimmed();
-    return trimmed.startsWith(u"```") || trimmed.startsWith(u"~~~");
-}
-
-std::optional<QString> headingTitle(const QString &line) {
-    static const QRegularExpression heading(QStringLiteral("^#{1,6} (.*)$"));
-    const QRegularExpressionMatch match = heading.match(line);
-    if (!match.hasMatch()) {
-        return std::nullopt;
-    }
-    return match.captured(1).trimmed();
-}
-
-// Indentation in columns; a tab counts as four spaces.
-int indentation(const QString &line) {
-    int columns = 0;
-    for (const QChar ch : line) {
-        if (ch == u' ') {
-            columns += 1;
-        } else if (ch == u'\t') {
-            columns += TabWidth;
-        } else {
-            break;
-        }
-    }
-    return columns;
-}
 
 struct DueDate {
     QString title;
@@ -58,25 +28,6 @@ DueDate splitDueDate(const QString &text) {
         return {.title = title.simplified(), .due = date};
     }
     return {.title = text.simplified(), .due = std::nullopt};
-}
-
-// A todo with its line, done and text filled in; parent and section are left to the caller.
-std::optional<Todo> todoLine(const QString &line, qsizetype lineIndex) {
-    static const QRegularExpression todo(
-        QStringLiteral(R"(^[ \t]*[-*+][ \t]+\[([ xX])\][ \t]+(.*)$)"));
-    const QRegularExpressionMatch match = todo.match(line);
-    if (!match.hasMatch()) {
-        return std::nullopt;
-    }
-    const QString text = match.captured(2);
-    const DueDate split = splitDueDate(text);
-    return Todo{
-        .line = lineIndex,
-        .done = match.captured(1) != u" ",
-        .text = text,
-        .title = split.title,
-        .due = split.due,
-    };
 }
 
 // A todo that later, more indented todos can be subtasks of.
@@ -114,15 +65,21 @@ TodoList findTodos(const Document &document) {
             ancestors.clear();
             continue;
         }
-        std::optional<Todo> todo = todoLine(line, i);
-        if (!todo) {
+        const std::optional<TodoLine> match = matchTodoLine(line);
+        if (!match) {
             continue;
         }
-        const int indent = indentation(line);
-        todo->parent = popToParent(ancestors, indent);
-        todo->section = list.sections.size() - 1;
-        list.todos.append(*todo);
-        ancestors.append({.indent = indent, .todo = list.todos.size() - 1});
+        const DueDate split = splitDueDate(match->text);
+        list.todos.append({
+            .line = i,
+            .parent = popToParent(ancestors, match->indent),
+            .section = list.sections.size() - 1,
+            .done = match->done,
+            .text = match->text,
+            .title = split.title,
+            .due = split.due,
+        });
+        ancestors.append({.indent = match->indent, .todo = list.todos.size() - 1});
     }
     return list;
 }
