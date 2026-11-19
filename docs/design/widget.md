@@ -51,8 +51,10 @@ large, built from circle, square and line.
   event's name and countdown.
 - **Then quiet details**, small and dim: a few more todos, milestone
   squares, the day as a strip from 08:00 to 20:00 with a circle at now.
-- Nothing is editable here. **← →** or **1 2 3** pick a column; **Enter**
-  or a click opens it.
+- Nothing is editable here. **← →**, **Tab** or **1 2 3** pick a column;
+  **Enter** or a click opens it. In an open column, **Tab** always moves to
+  the next one, as in rofi; **← →** do too, except while the todo input
+  holds text and needs them for its cursor.
 
 ## Panel: an expanded card
 
@@ -92,6 +94,8 @@ overview, then closes the panel.
 | Ctrl+E | edits the highlighted todo in the input line; Enter saves, Esc cancels |
 | Shift+Delete | removes the highlighted todo with its subtasks |
 | Ctrl+H | shows or hides done todos |
+| Tab, Shift+Tab | opens the next or previous column |
+| ← → | with an empty input, opens the previous or next column; otherwise moves the cursor |
 
 ### Project (stub)
 
