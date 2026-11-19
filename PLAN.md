@@ -28,4 +28,4 @@ long term.
 - [x] Decide the widget design: [docs/design/widget.md](docs/design/widget.md).
 - [x] Experiment: our own glass frame on a Plasma popup (works in
       plasmoidviewer; see docs/design/widget.md).
-- [ ] Check in the real top bar: the panel opens under the badge.
+- [x] Check in the real top bar: the panel opens under the badge.

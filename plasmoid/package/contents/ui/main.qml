@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 
-// Experiment: a badge that opens our own frameless panel, with KWin's blur behind it.
-// See docs/design/widget.md, "Our own frame".
+// A badge in the top bar that opens our own frameless panel, with KWin's blur behind it.
+// See docs/design/widget.md, "How it is built". The panel's content is still a placeholder.
 import QtQuick
 import QtQuick.Layouts
 import org.kde.plasma.plasmoid
@@ -14,9 +14,10 @@ PlasmoidItem {
 
     readonly property real slabRadius: Kirigami.Units.cornerRadius * 3
 
-    preferredRepresentation: compactRepresentation
+    // The badge is shown inline in the bar; the panel is our own dialog, not Plasma's popup.
+    preferredRepresentation: fullRepresentation
 
-    compactRepresentation: Item {
+    fullRepresentation: Item {
         Layout.preferredWidth: badge.implicitWidth
         Layout.preferredHeight: badge.implicitHeight
 
@@ -45,17 +46,10 @@ PlasmoidItem {
         }
     }
 
-    // Experiment: open the panel shortly after start, to look at it without clicking.
-    Timer {
-        interval: 1500
-        running: true
-        onTriggered: panel.visible = true
-    }
-
     PlasmaCore.Dialog {
         id: panel
 
-        visualParent: root.compactRepresentationItem
+        visualParent: root.fullRepresentationItem
         location: PlasmaCore.Types.Floating
         type: PlasmaCore.Dialog.PopupMenu
         backgroundHints: PlasmaCore.Dialog.NoBackground

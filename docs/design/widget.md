@@ -133,21 +133,24 @@ comes from is an open question.
 
 ## How it is built
 
-- The widget is a plasmoid: `compactRepresentation` is the badge,
-  `fullRepresentation` the panel.
+- The widget is a plasmoid. The badge is shown inline in the bar; the
+  panel is our own dialog, not Plasma's popup (see below).
 - A C++ QML plugin (`src/qml/`) offers the todos as a list model over the
   store, and watches the todo file, so edits from the CLI or a text editor
   show at once.
 - Centring: the widget fills the space between the app menu and the tray
   and places the badge at the screen's centre within it.
-- **Our own frame** (experiment, 2026-11-19): the badge opens a
+- **Our own frame** (tried 2026-11-19): the badge opens a
   `PlasmaCore.Dialog` with `backgroundHints: NoBackground`, and the panel
   is drawn in QML. Without the theme's background KWin no longer blurs
   behind the dialog, so the QML plugin's `WindowEffects.blurBehind()` asks
-  for it (`KWindowEffects`, KDE Frameworks), with round corners. In
-  `plasmoidviewer` this gives a transparent, blurred slab with our border.
-  Placing it under the badge still has to be checked in a real panel,
-  because `plasmoidviewer` doesn't create the badge.
+  for it (`KWindowEffects`, KDE Frameworks), with round corners. Checked
+  in the real top bar: the panel opens right under the badge, kept on
+  screen near an edge, as a transparent, blurred slab with our border.
+- **The badge is the widget's `fullRepresentation`**, shown inline in the
+  bar (`preferredRepresentation: fullRepresentation`). With only a
+  `compactRepresentation`, Plasma never creates it, and the panel has
+  nothing to open under.
 
 ## Decisions on the earlier open questions
 
