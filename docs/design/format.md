@@ -112,11 +112,12 @@ tell what topdo sees by looking at each line.
 
 - topdo uses `todo.md` inside a todo folder, by default `~/Documents/todo/`.
   The folder leaves room for more files later (for example `done.md`).
-- The folder is set once in `~/.config/topdo/config.toml`, which the
-  widget, the CLI and the MCP server all read:
+- The folder is set once in `~/.config/topdo/topdo.conf`, a plain
+  `key=value` (INI) file that the widget, the CLI and the MCP server all
+  read. A leading `~/` means your home folder:
 
-  ```toml
-  dir = "~/Documents/todo"
+  ```ini
+  dir=~/Documents/todo
   ```
 
 - `topdo --dir <folder>` overrides it for one command.
@@ -134,6 +135,7 @@ tell what topdo sees by looking at each line.
 | Headings are sections | One flat list: no place to keep work and home todos apart |
 | `due:YYYY-MM-DD` | Obsidian Tasks' `📅 2026-11-21`: awkward to type in a terminal |
 | One folder in a shared config file | Per-frontend settings: the widget and CLI can drift to different files |
+| An INI config file, read with Qt's `QSettings` | TOML: Qt has no parser for it, and one key doesn't need one |
 | Done todos stay in place | Move them to a `## Done` section: an edit then changes more than its line |
 | Markdown | todo.txt: no place for headings and notes; JSON: unpleasant to edit by hand |
 | Write `\n` endings and a final newline | Keep the file's own endings and byte order mark: complexity a hand-written todo file doesn't need |

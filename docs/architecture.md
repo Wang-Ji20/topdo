@@ -8,7 +8,7 @@ docs/design/format.md   the todo file format: the contract
         |
 src/core/               parse, edit and render a todo file; pure functions
         |
-src/store/              read and write the file on disk, watch it for changes
+src/store/              read and write the file on disk, read the config
         |
         +-- src/qml/    exposes the store to QML as a list model
         +-- src/cli/    the `topdo` command
@@ -51,10 +51,19 @@ document. The rules for where each edit acts are in
 [design/format.md](design/format.md), rules 6 to 8. The line rules that
 both `findTodos` and the edits use live in one place, `todoline.h`.
 
-**store** owns the file on disk. It reads the file, applies an edit through
-core, and writes the result atomically, so a crash never leaves a
-half-written file. When the file changes on disk (an edit in a text editor,
-a sync tool), the store reloads it before its next write.
+**store** owns the file on disk and the config file. It holds no state:
+
+| Function | Does |
+|---|---|
+| `load(path)` | reads the todo file; a missing file is an empty document |
+| `save(path, document)` | writes it atomically (`QSaveFile`), creating the folder |
+| `update(path, change)` | `load`, apply an edit from core, `save` if anything changed |
+| `configuredDir(configFile)` | the todo folder from `~/.config/topdo/topdo.conf` |
+
+Because `update` reads the file again for every edit, an edit made
+elsewhere in the meantime (a text editor, a sync tool) is kept, not
+overwritten. Operations that can fail return `std::expected` with a message
+that names the file.
 
 **Frontends** translate between their world and the store, and hold no
 logic of their own:
@@ -72,12 +81,15 @@ touching the rest.
 Ticking off a todo in the popup:
 
 ```
-plasmoid  --click-->  qml model  --toggle(item)-->  store
+plasmoid  --click-->  qml model  --update(path, setDone)-->  store
 store: read file -> core.parse -> core.setDone -> core.render -> atomic write
-store  --changed-->  qml model  --> plasmoid redraws
+file changed on disk  -->  qml model reloads  -->  plasmoid redraws
 ```
+
+The qml model watches the file, so edits from anywhere (the popup, the CLI,
+a text editor) reach the popup the same way.
 
 The CLI and the MCP server follow the same path from `store` down.
 
-So far `core` exists: reading and writing the file, finding the todos, and
-editing them. See [../PLAN.md](../PLAN.md).
+So far `core` and `store` exist; the frontends and the plasmoid don't yet.
+See [../PLAN.md](../PLAN.md).

@@ -77,7 +77,7 @@ src/core/               pure: parse(text) -> Document,
         |               findTodos(Document), edits: Document -> Document,
         |               render(Document) -> text
         |               value types only: no QObject, no I/O
-src/store/              file I/O: atomic save, file watcher, reload before write
+src/store/              file I/O: load, atomic save, update from the file on disk
         |
         +-- src/qml/    QML plugin: a QAbstractListModel over the store
         +-- src/cli/    the `topdo` command

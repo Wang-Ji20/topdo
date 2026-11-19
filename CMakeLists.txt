@@ -18,4 +18,5 @@ qt_standard_project_setup()
 enable_testing()
 
 add_subdirectory(src/core)
+add_subdirectory(src/store)
 add_subdirectory(tests)

@@ -51,4 +51,4 @@ each one a todo.
 the todos. Its format is defined in [design/format.md](design/format.md).
 
 **Todo folder.** The folder that holds the todo file, by default
-`~/Documents/todo/`. It is set in `~/.config/topdo/config.toml`.
+`~/Documents/todo/`. It is set in `~/.config/topdo/topdo.conf`.

@@ -14,4 +14,5 @@ long term.
       property test and the random-file generator.
 - [x] `core`: find the todos, subtasks, sections and due dates in the lines.
 - [x] `core`: edits (add, toggle, edit text, remove).
-- [ ] `store`: atomic save, file watcher, reload before write.
+- [x] `store`: load, atomic save, update that starts from the file on disk,
+      and the config file.
