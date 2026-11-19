@@ -1,0 +1,2 @@
+# Test files must keep their exact bytes: no line-ending conversion, no diffs as text.
+tests/data/** -text -diff

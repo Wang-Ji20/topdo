@@ -14,3 +14,9 @@ indent_size = 2
 
 [*.md]
 trim_trailing_whitespace = false
+
+[tests/data/**]
+insert_final_newline = unset
+trim_trailing_whitespace = unset
+end_of_line = unset
+charset = unset

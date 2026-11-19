@@ -16,6 +16,7 @@ HeaderFilterRegex: '^.*/src/.*'
 CheckOptions:
   readability-identifier-naming.ClassCase: CamelCase
   readability-identifier-naming.FunctionCase: camelBack
+  readability-identifier-naming.FunctionIgnoredRegexp: '.*_data$'   # QTest data functions
   readability-identifier-naming.VariableCase: camelBack
   readability-identifier-naming.PrivateMemberPrefix: m_
   readability-identifier-naming.ProtectedMemberPrefix: m_

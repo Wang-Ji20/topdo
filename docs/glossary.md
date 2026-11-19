@@ -3,6 +3,9 @@
 **Badge.** The small label topdo shows in the top bar, for example
 `● Write report · 3`. Clicking it opens the popup.
 
+**Byte order mark (BOM).** Three bytes (`EF BB BF`) that some editors put at
+the start of a UTF-8 file. topdo keeps them if they are there.
+
 **CMake preset.** A named set of build settings in `CMakePresets.json`, used
 as `cmake --preset dev`.
 
@@ -14,6 +17,9 @@ test passes when the code produces exactly that output.
 
 **KDE Plasma.** The desktop environment topdo runs in: the top bar, the
 dock, the wallpaper and the system settings.
+
+**Line ending.** The bytes that end a line: `\n` (LF) on Linux and macOS,
+`\r\n` (CRLF) on Windows. A file can mix both; topdo keeps each line's own.
 
 **MCP (Model Context Protocol).** An open protocol through which AI
 assistants such as Claude call tools that a program offers. topdo's MCP

@@ -12,7 +12,10 @@ if(TOPDO_WERROR)
     add_compile_options(-Werror)
 endif()
 
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Test)
+qt_standard_project_setup()
+
 enable_testing()
 
-# Qt, KDE Frameworks and the targets under src/ arrive with the first code;
-# see PLAN.md.
+add_subdirectory(src/core)
+add_subdirectory(tests)

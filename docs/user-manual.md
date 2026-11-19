@@ -36,6 +36,19 @@ ctest --preset dev          # run the tests
 The `dev` preset is a debug build that treats compiler warnings as errors.
 The `release` preset builds an optimised version into `build/release`.
 
+The property tests check rules on random todo files. Each run picks a new
+random seed and prints it:
+
+```
+QINFO  : TestDocument::roundTripsRandomFiles() seed 313152176 (replay with TOPDO_SEED=313152176)
+```
+
+To replay a failure exactly, run the test again with that seed:
+
+```sh
+TOPDO_SEED=313152176 ctest --preset dev
+```
+
 ## Format and lint
 
 ```sh
@@ -44,3 +57,6 @@ clang-tidy -p build/dev <changed .cpp files>
 qmlformat -i <changed .qml files>
 qmllint <changed .qml files>
 ```
+
+`qmlformat` and `qmllint` are installed in `/usr/lib64/qt6/bin/`, which is
+not on `PATH`; call them with that prefix or add it to `PATH`.

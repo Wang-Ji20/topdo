@@ -1,0 +1,2 @@
+﻿- [ ] byte order mark
+- [ ] no final newline
