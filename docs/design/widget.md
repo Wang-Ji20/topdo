@@ -26,7 +26,7 @@ large, built from circle, square and line.
   todo, otherwise the first open todo (`nextTodo()` in core).
 - It sits at the exact centre of the screen, whatever the width of the app
   menu on the left and the tray on the right.
-- A click, or a global shortcut (Meta+T), opens and closes the panel.
+- A click, or a global shortcut (Meta+Space; Meta+T is KWin's tiles editor), opens and closes the panel.
 
 ## Panel: overview
 

@@ -24,6 +24,16 @@ PlasmoidItem {
         id: todoModel
     }
 
+    // The widget's global shortcut (its settings, "Keyboard Shortcuts") opens and closes the panel.
+    // Plasma would expand its own popup; topdo's panel is its own dialog.
+    Connections {
+        function onActivated() {
+            panel.visible = !panel.visible;
+        }
+
+        target: Plasmoid
+    }
+
     PlasmaCore.Dialog {
         id: panel
 
