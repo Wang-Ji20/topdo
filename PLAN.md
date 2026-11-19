@@ -32,6 +32,6 @@ long term.
 - [x] `core`: which todos the panel lists, and the badge's next todo.
 - [x] `qml`: a list model over the store that watches the todo file.
 - [x] The badge: next todo, open and late counts, at the screen's centre.
-- [ ] The overview: three columns, project and today as stubs.
+- [x] The overview: three columns, project and today as stubs.
 - [ ] The open todo column: input line, filtering, keys.
 - [ ] Install and placement through the dotfiles.

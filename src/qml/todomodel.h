@@ -24,9 +24,10 @@ class TodoModel : public QAbstractListModel {
     // Text to filter the list by; see filterTodos().
     Q_PROPERTY(QString filter READ filter WRITE setFilter NOTIFY filterChanged)
     Q_PROPERTY(bool showDone READ showDone WRITE setShowDone NOTIFY showDoneChanged)
-    Q_PROPERTY(int openCount READ openCount NOTIFY todosChanged) // open top-level todos
-    Q_PROPERTY(int doneCount READ doneCount NOTIFY todosChanged) // done todos, at any depth
-    Q_PROPERTY(int lateCount READ lateCount NOTIFY todosChanged) // open todos due before today
+    Q_PROPERTY(int openCount READ openCount NOTIFY todosChanged)   // open top-level todos
+    Q_PROPERTY(int doneCount READ doneCount NOTIFY todosChanged)   // done todos, at any depth
+    Q_PROPERTY(int totalCount READ totalCount NOTIFY todosChanged) // all todos, at any depth
+    Q_PROPERTY(int lateCount READ lateCount NOTIFY todosChanged)   // open todos due before today
     Q_PROPERTY(
         QString nextTitle READ nextTitle NOTIFY todosChanged) // the badge's todo; see nextTodo()
     Q_PROPERTY(QDate nextDue READ nextDue NOTIFY todosChanged)
@@ -59,6 +60,7 @@ class TodoModel : public QAbstractListModel {
     void setShowDone(bool showDone);
     [[nodiscard]] int openCount() const;
     [[nodiscard]] int doneCount() const;
+    [[nodiscard]] int totalCount() const { return static_cast<int>(m_list.todos.size()); }
     [[nodiscard]] int lateCount() const;
     [[nodiscard]] QString nextTitle() const;
     [[nodiscard]] QDate nextDue() const;

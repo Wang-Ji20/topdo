@@ -105,3 +105,11 @@ QML_IMPORT_PATH=$PWD/build/dev/qml plasmoidviewer -c org.kde.panel -a $PWD/plasm
 
 `plasmoidviewer` shows the panel but not the badge in the top bar, so it
 can't show where the panel opens.
+
+To work on the panel alone, show it in a plain window, on any todo file:
+
+```sh
+QML_IMPORT_PATH=$PWD/build/dev/qml /usr/lib64/qt6/bin/qml plasmoid/preview.qml -- path/to/todo.md
+```
+
+The keys work there too; there is no blur, since that comes from KWin.

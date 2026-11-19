@@ -161,6 +161,12 @@ comes from is an open question.
   for it (`KWindowEffects`, KDE Frameworks), with round corners. Checked
   in the real top bar: the panel opens right under the badge, kept on
   screen near an edge, as a transparent, blurred slab with our border.
+- **The panel's QML:** `Panel.qml` draws the slab, the columns and the
+  hint line and handles the keys; each column is its own file
+  (`TodoOverview.qml`, `ProjectStub.qml`, `TodayStub.qml`), and
+  `Style.qml` holds the colours (from the Plasma theme), typefaces, sizes
+  and the due-date label. `plasmoid/preview.qml` shows the panel in a
+  plain window for development, without Plasma or blur.
 - **The badge is the widget's `fullRepresentation`**, shown inline in the
   bar (`preferredRepresentation: fullRepresentation`). With only a
   `compactRepresentation`, Plasma never creates it, and the panel has

@@ -96,6 +96,7 @@ class TestTodoModel : public QObject {
         QVERIFY(!role(model, 0, TodoModel::DueRole).isValid());
         QCOMPARE(model.openCount(), 4);
         QCOMPARE(model.doneCount(), 2);
+        QCOMPARE(model.totalCount(), 7);
         QCOMPARE(model.error(), QString());
     }
 

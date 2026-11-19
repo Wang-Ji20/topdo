@@ -1,0 +1,221 @@
+pragma ComponentBehavior: Bound
+
+import QtQuick
+import QtQuick.Layouts
+import io.github.wangji20.topdo
+
+// The panel: one glass slab with a metal edge, divided by hairlines into three columns, and a
+// line of key hints. It opens as an overview; an open column is wider and the slab grows to
+// `fullHeight`. See docs/design/widget.md, "Panel".
+FocusScope {
+    id: panel
+
+    required property TodoModel todos
+    // The column picked in the overview, and the open column (-1: none).
+    property int focusColumn: 0
+    property int openColumn: -1
+    // The height of the slab while a column is open: the screen below the top bar.
+    property real fullHeight: theme.unit * 40
+
+    signal closeRequested
+
+    // Opens a column, or with -1 goes back to the overview.
+    function open(column: int) {
+        if (column >= 0) {
+            panel.focusColumn = column;
+        }
+        panel.openColumn = column;
+    }
+
+    // Steps one column left (-1) or right (+1), wrapping around.
+    function step(by: int) {
+        const next = (panel.focusColumn + by + 3) % 3;
+        if (panel.openColumn >= 0) {
+            panel.open(next);
+        } else {
+            panel.focusColumn = next;
+        }
+    }
+
+    function weight(column: int): real {
+        if (panel.openColumn < 0) {
+            return 1;
+        }
+        return column === panel.openColumn ? 2.2 : 0.9;
+    }
+
+    implicitWidth: theme.unit * 62
+    implicitHeight: openColumn < 0 ? theme.unit * 25 : fullHeight
+    focus: true
+
+    Keys.onPressed: event => {
+        const overview = panel.openColumn < 0;
+        if (event.key === Qt.Key_Left || event.key === Qt.Key_Backtab) {
+            panel.step(-1);
+        } else if (event.key === Qt.Key_Right || event.key === Qt.Key_Tab) {
+            panel.step(1);
+        } else if (event.key >= Qt.Key_1 && event.key <= Qt.Key_3) {
+            panel.open(event.key - Qt.Key_1);
+        } else if (overview && (event.key === Qt.Key_Return || event.key === Qt.Key_Enter)) {
+            panel.open(panel.focusColumn);
+        } else if (event.key === Qt.Key_Escape) {
+            if (overview) {
+                panel.closeRequested();
+            } else {
+                panel.open(-1);
+            }
+        } else {
+            return;
+        }
+        event.accepted = true;
+    }
+
+    Behavior on implicitHeight {
+        NumberAnimation {
+            duration: 220
+            easing.type: Easing.OutCubic
+        }
+    }
+
+    Style {
+        id: theme
+    }
+
+    // The metal edge: light at the top, darker below, under the glass.
+    Rectangle {
+        id: edge
+
+        anchors.fill: parent
+        radius: theme.radius
+
+        gradient: Gradient {
+            GradientStop {
+                position: 0
+                color: theme.withAlpha(theme.text, 0.42)
+            }
+
+            GradientStop {
+                position: 0.45
+                color: theme.withAlpha(theme.text, 0.07)
+            }
+
+            GradientStop {
+                position: 1
+                color: theme.withAlpha(theme.text, 0.2)
+            }
+        }
+    }
+
+    Rectangle {
+        id: glass
+
+        anchors.fill: parent
+        anchors.margins: 1
+        radius: theme.radius - 1
+        color: theme.glass
+
+        ColumnLayout {
+            anchors.fill: parent
+            spacing: 0
+
+            Row {
+                id: columns
+
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                Repeater {
+                    model: 3
+
+                    Item {
+                        id: column
+
+                        required property int index
+                        readonly property bool picked: panel.openColumn === index || (panel.openColumn < 0 && panel.focusColumn === index)
+
+                        width: columns.width * panel.weight(index) / (panel.weight(0) + panel.weight(1) + panel.weight(2))
+                        height: columns.height
+                        clip: true
+
+                        Behavior on width {
+                            NumberAnimation {
+                                duration: 220
+                                easing.type: Easing.OutCubic
+                            }
+                        }
+
+                        Rectangle {
+                            anchors.fill: parent
+                            visible: panel.openColumn === column.index
+                            color: theme.withAlpha(theme.text, 0.05)
+                        }
+
+                        Rectangle {
+                            visible: column.index > 0
+                            width: 1
+                            height: parent.height
+                            color: theme.hair
+                        }
+
+                        Loader {
+                            anchors.fill: parent
+                            anchors.margins: theme.unit * 1.4
+                            opacity: panel.openColumn >= 0 && panel.openColumn !== column.index ? 0.72 : 1
+                            sourceComponent: [todoOverview, projectStub, todayStub][column.index]
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            enabled: panel.openColumn !== column.index
+                            onClicked: panel.open(column.index)
+                        }
+
+                        Component {
+                            id: todoOverview
+
+                            TodoOverview {
+                                style: theme
+                                todos: panel.todos
+                                active: column.picked
+                            }
+                        }
+
+                        Component {
+                            id: projectStub
+
+                            ProjectStub {
+                                style: theme
+                                active: column.picked
+                            }
+                        }
+
+                        Component {
+                            id: todayStub
+
+                            TodayStub {
+                                style: theme
+                                active: column.picked
+                            }
+                        }
+                    }
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                implicitHeight: 1
+                color: theme.hair
+            }
+
+            Text {
+                Layout.fillWidth: true
+                Layout.margins: theme.unit * 0.6
+                Layout.leftMargin: theme.unit * 1.4
+                text: panel.openColumn < 0 ? "← →  pick     1 2 3  open     ↵  open     esc  close" : "← →  other columns     esc  back"
+                color: theme.dim
+                font.family: theme.mono
+                font.pixelSize: theme.unit * 0.6
+            }
+        }
+    }
+}

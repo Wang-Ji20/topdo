@@ -150,6 +150,8 @@ plasmoid/               the Plasma widget, QML only: badge and popup
 - `ctest --preset dev` must pass before every commit.
 - Unit and golden-file tests use QTest. Golden files live in
   `tests/data/`: an input, the expected result, and nothing else.
+- The plasmoid's QML is tested with Qt Quick Test (`tests/qml/*.qml`,
+  run by `qmltestrunner`, offscreen), with real key presses.
 - **Property tests** for new logic wherever a property can be stated. We
   have no property-testing library, so `tests/` holds a small generator of
   random todo files. It takes a seed and prints it when a test fails, so
