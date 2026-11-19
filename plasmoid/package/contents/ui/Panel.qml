@@ -209,6 +209,7 @@ FocusScope {
                             ProjectStub {
                                 style: theme
                                 active: column.picked
+                                open: panel.openColumn === column.index
                             }
                         }
 
@@ -218,6 +219,7 @@ FocusScope {
                             TodayStub {
                                 style: theme
                                 active: column.picked
+                                open: panel.openColumn === column.index
                             }
                         }
                     }

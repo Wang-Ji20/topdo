@@ -10,6 +10,8 @@ ColumnLayout {
 
     required property Style style
     property bool active: false
+    // Open, the column shows the whole day as a timeline instead of the strip.
+    property bool open: false
 
     readonly property var events: [
         {
@@ -49,6 +51,11 @@ ColumnLayout {
         },
     ]
     readonly property real now: 14.53
+
+    function clock(hour: real): string {
+        const minutes = Math.round(hour * 60);
+        return `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
+    }
 
     spacing: style.unit * 0.95
 
@@ -93,10 +100,92 @@ ColumnLayout {
         Layout.fillHeight: true
     }
 
-    // The day strip.
+    // The timeline, open: one row per event, a line at now.
+    ColumnLayout {
+        Layout.fillWidth: true
+        visible: today.open
+        spacing: 0
+
+        Repeater {
+            model: today.open ? today.events : []
+
+            ColumnLayout {
+                id: event
+
+                required property int index
+                required property var modelData
+                readonly property bool past: modelData.end <= today.now
+                readonly property bool current: modelData.start <= today.now && today.now < modelData.end
+                readonly property bool nowBefore: today.now < modelData.start && (index === 0 || today.events[index - 1].start <= today.now)
+
+                Layout.fillWidth: true
+                spacing: 0
+
+                RowLayout {
+                    visible: event.nowBefore
+                    Layout.fillWidth: true
+                    spacing: today.style.unit * 0.8
+
+                    Text {
+                        Layout.preferredWidth: today.style.unit * 2.6
+                        text: today.clock(today.now)
+                        color: today.style.accent
+                        font.family: today.style.mono
+                        font.pixelSize: today.style.unit * 0.6
+                    }
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        implicitHeight: 1
+                        color: today.style.accent
+                    }
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    Layout.topMargin: today.style.unit * 0.35
+                    Layout.bottomMargin: today.style.unit * 0.35
+                    opacity: event.past ? 0.6 : 1
+                    spacing: today.style.unit * 0.8
+
+                    Text {
+                        Layout.preferredWidth: today.style.unit * 2.6
+                        text: today.clock(event.modelData.start)
+                        color: event.current ? today.style.accent : today.style.dim
+                        font.family: today.style.mono
+                        font.pixelSize: today.style.unit * 0.6
+                    }
+
+                    Text {
+                        Layout.fillWidth: true
+                        text: event.modelData.what
+                        color: today.style.text
+                        font.family: today.style.geometric
+                        font.pixelSize: today.style.unit * 0.9
+                    }
+
+                    Text {
+                        text: `${today.clock(event.modelData.start)}–${today.clock(event.modelData.end)}`
+                        color: today.style.dim
+                        font.family: today.style.mono
+                        font.pixelSize: today.style.unit * 0.55
+                    }
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    implicitHeight: 1
+                    color: today.style.hair
+                }
+            }
+        }
+    }
+
+    // The day strip, at rest.
     Item {
         id: strip
 
+        visible: !today.open
         function xOf(hour: real): real {
             return (hour - 8) / 12 * strip.width;
         }
