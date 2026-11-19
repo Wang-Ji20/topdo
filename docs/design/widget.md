@@ -56,8 +56,9 @@ large, built from circle, square and line.
 
 ## Panel: an expanded card
 
-The open column takes about half the width; the other two stay visible,
-narrower and dimmed. **Esc** steps back: it clears the input, then returns to the
+The open column takes about half the width, and the panel grows to the
+full height of the screen; the other two columns stay visible, narrower
+and dimmed. **Esc** steps back: it clears the input, then returns to the
 overview, then closes the panel.
 
 ### Todo
@@ -119,10 +120,11 @@ comes from is an open question.
 - **Colour:** greys, plus the Plasma theme's highlight colour as the only
   accent (selection, progress, now). Red and amber only for late and soon
   due dates.
-- **Height:** about 430 px, so the overview breathes and the open todo
-  list shows about ten rows.
-- **Contrast:** the glass is mostly opaque (about 78 %), so text stays
-  readable over any wallpaper; secondary text is a light grey, not a dim
+- **Height:** about 430 px for the overview. Opening a column grows the
+  panel to the full height of the screen below the top bar, so a long
+  todo list or a whole day fits.
+- **Contrast:** the glass is a lighter graphite and mostly opaque (about
+  88 %), so text stays readable over any wallpaper; secondary text is a light grey, not a dim
   one, and the narrow columns stay at about 70 % while another is open.
 
 ## How it is built
