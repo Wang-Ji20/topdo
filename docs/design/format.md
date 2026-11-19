@@ -1,65 +1,124 @@
 # The todo file format
 
-Status: Draft, 2026-11-19.
+Status: Decided, 2026-11-19.
 
-The todo file is a Markdown file. topdo reads the todos out of it and
-changes only those lines; everything else in the file is the user's and stays
+The todo file is a Markdown file. topdo reads the todos out of it and changes
+only those lines; everything else in the file is the user's and stays
 untouched.
 
 ## Example
 
 ```markdown
-# Todo
+- [ ] Buy milk
 
-- [ ] Write report
-- [ ] Call the bank
-  Ask about the transfer fee.
+## Work
+
+- [ ] Write report due:2026-11-21
+- [ ] Plan trip
+  - [x] Book flight
+  - [ ] Book hotel
+  Ask about late check-in.
+
+## Home
+
+* [ ] Call the bank
 - [x] Renew passport
 
 Notes that are not todos stay exactly as written.
 ```
 
-topdo sees three todos here: two open and one done. The heading, the
-indented note and the last paragraph are other lines: topdo keeps them but
-never shows or changes them.
+topdo sees this as:
 
-## Proposed rules
+```
+(unnamed section)
+  [ ] Buy milk
+Work
+  [ ] Write report            due 2026-11-21
+  [ ] Plan trip
+      [x] Book flight
+      [ ] Book hotel
+Home
+  [ ] Call the bank
+  [x] Renew passport
+```
 
-1. **A todo is a task list item:** a line `- [ ] text` (open) or
-   `- [x] text` (done), the syntax GitHub introduced for Markdown.
+The note under "Plan trip" and the last paragraph are other lines: topdo
+keeps them but never shows or changes them.
+
+## Rules
+
+### What a todo is
+
+1. **A todo is a task list item:** a bullet list marker (`-`, `*` or `+`),
+   a space, a checkbox, a space, and the text.
+   - `[ ]` means open; `[x]` and `[X]` mean done.
+   - Ordered list items (`1. [ ] text`) are not todos; they are other lines.
 2. **Everything else is an other line**, kept byte for byte: headings,
-   paragraphs, blank lines, code blocks, and lines that only look like
-   todos (for example inside a code block).
-3. **Edits touch only their own line.** Ticking off a todo changes `[ ]`
-   to `[x]` and nothing else. Adding a todo inserts one new line.
-4. **The file keeps its encoding and line endings.** topdo reads UTF-8,
-   remembers whether lines end in LF or CRLF, and writes them back the same
-   way.
+   paragraphs, blank lines, notes under a todo, and lines that only look
+   like todos, such as those inside a code block.
 
-Rule 2 is why the parser must agree with a real Markdown parser on what a
-task list item is; the tests compare it against cmark-gfm.
+The parser must agree with a real Markdown parser on rule 1; the tests
+compare it against cmark-gfm on bullet lists.
 
-## Open questions
+### Structure
 
-- **Which list markers count?** Markdown also allows `*` and `+`, and `[X]`
-  for done. Accept them all when reading, and write `-` and `[x]`?
-- **Where do new todos go?** At the end of the first task list, at the top
-  of the file, or under a chosen heading?
-- **Nested todos** (indented under another todo): subtasks, or treated as
-  independent todos?
-- **Headings as sections:** should the popup group todos by the heading
-  above them?
-- **Due dates:** a `due:2026-11-21` tag (as in the todo.txt format), or
-  Obsidian Tasks' `📅 2026-11-21`? Either way the text stays readable as
-  plain Markdown.
-- **Location of the file:** `~/Documents/todo.md` by default, changeable in
-  the widget's settings and by `topdo --file`?
-- **Done todos:** keep them in place, or let the user move them to a
-  `## Done` section?
+3. **A subtask is a todo nested in another todo's list item**, by
+   indentation, as Markdown defines it. Subtasks can nest further.
+   - Ticking a todo doesn't tick its subtasks, and ticking all subtasks
+     doesn't tick their parent.
+   - The badge counts only open top-level todos.
+4. **A heading starts a section** named by the heading's text. Only ATX
+   headings count (`#` to `######` at the start of a line). Todos before
+   the first heading belong to an unnamed section.
+5. **A due date is a `due:YYYY-MM-DD` word** in the todo's text, separated
+   from other words by spaces. The popup shows it as a date and leaves it
+   out of the title. A word that isn't a valid date is plain text. If a
+   todo has several, the first one counts.
 
-## Rejected options
+### Edits
 
-- **todo.txt** (one todo per line, no Markdown): simpler to parse, but not
-  Markdown, so headings and notes have no place.
-- **JSON or a database:** easy for code, but not pleasant to read or edit by
-  hand, which is the point of a plain file.
+6. **An edit touches only its own lines.**
+   - Ticking or unticking changes only the character between the brackets:
+     a space becomes `x`; `x` or `X` becomes a space. The list marker stays.
+   - Editing the text replaces only the text after the checkbox.
+   - Removing deletes the todo's line and the lines of its list item (its
+     subtasks and notes).
+7. **New todos are written as `- [ ] text`** and go:
+   - into a given section: after the last line of that section's first run
+     of todos, or right after the heading if the section has none;
+   - with no section given: after the last line of the first run of todos
+     in the file;
+   - into a file with no todos: at the end of the file.
+8. **Done todos stay where they are.** The popup collapses them into a
+   "Done" group; the file doesn't change.
+9. **The file keeps its encoding and line endings.** topdo reads UTF-8 and
+   writes back the same line endings (LF or CRLF), byte order mark and
+   final newline that it read.
+
+## Where the file lives
+
+- topdo uses `todo.md` inside a todo folder, by default `~/Documents/todo/`.
+  The folder leaves room for more files later (for example `done.md`).
+- The folder is set once in `~/.config/topdo/config.toml`, which the
+  widget, the CLI and the MCP server all read:
+
+  ```toml
+  dir = "~/Documents/todo"
+  ```
+
+- `topdo --dir <folder>` overrides it for one command.
+- If the folder or the file doesn't exist, topdo creates it when the first
+  todo is added.
+
+## Decisions and the main rejected option
+
+| Decision | Rejected |
+|---|---|
+| Read all bullet markers and `[X]`; write `- [ ]` and `[x]` | Only `- [ ]`: todos written with `*` would silently disappear |
+| New todos at the end of the first run of todos | At the end of the file: they can land below unrelated notes |
+| Nested todos are subtasks | A flat list: loses the structure the user wrote |
+| Headings are sections | One flat list: no place to keep work and home todos apart |
+| `due:YYYY-MM-DD` | Obsidian Tasks' `📅 2026-11-21`: awkward to type in a terminal |
+| One folder in a shared config file | Per-frontend settings: the widget and CLI can drift to different files |
+| Done todos stay in place | Move them to a `## Done` section: an edit then changes more than its line |
+| Markdown | todo.txt: no place for headings and notes; JSON: unpleasant to edit by hand |

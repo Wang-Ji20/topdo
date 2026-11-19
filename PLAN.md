@@ -6,8 +6,8 @@ long term.
 ## Milestone 1: core and store
 
 - [x] Repository skeleton: AGENTS.md, build presets, lint configs, docs.
-- [ ] Decide the open questions in
-      [docs/design/format.md](docs/design/format.md) and mark it `Decided`.
+- [x] Decide the todo file format:
+      [docs/design/format.md](docs/design/format.md).
 - [ ] Install the build dependencies (see
       [docs/user-manual.md](docs/user-manual.md)).
 - [ ] `core`: parse and render with the round-trip property test and the

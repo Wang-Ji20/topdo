@@ -9,7 +9,7 @@ A command-line tool, `topdo`, and an MCP server for AI assistants read and
 edit the same file.
 
 ```
-~/Documents/todo.md          top bar              popup
+~/Documents/todo/todo.md     top bar              popup
 - [ ] Write report      ->   ● Write report · 3   [ add a todo...      ]
 - [ ] Call the bank                               [ ] Write report
 - [x] Renew passport                              [ ] Call the bank
