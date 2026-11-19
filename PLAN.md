@@ -22,3 +22,8 @@ long term.
 - [x] Decide the command design: [docs/design/cli.md](docs/design/cli.md).
 - [x] `topdo list` and `topdo path`.
 - [x] `topdo add`, `done`, `undone`, `edit`, `rm`.
+
+## Milestone 3: Plasma widget
+
+- [ ] Decide the widget design: [docs/design/widget.md](docs/design/widget.md).
+- [ ] Experiment: our own glass frame and gradient border on a Plasma popup.
