@@ -3,8 +3,9 @@ import QtQuick.Window
 import io.github.wangji20.topdo
 import "package/contents/ui"
 
-// Shows the panel in a plain window, without Plasma, on the todo file given as the last argument:
-//   QML_IMPORT_PATH=build/dev/qml /usr/lib64/qt6/bin/qml plasmoid/preview.qml -- path/to/todo.md
+// Shows the panel in a plain window, without Plasma, on the todo file given as the last argument;
+// --open=N opens column N (0, 1 or 2) at start:
+//   QML_IMPORT_PATH=build/dev/qml /usr/lib64/qt6/bin/qml plasmoid/preview.qml -- [--open=0] todo.md
 // There is no blur here; the background shapes only show that the glass is translucent.
 Window {
     width: panel.implicitWidth + 80
@@ -47,5 +48,11 @@ Window {
         todos: todoModel
         fullHeight: 640
         onCloseRequested: Qt.quit()
+        Component.onCompleted: {
+            const open = Qt.application.arguments.find(argument => argument.startsWith("--open="));
+            if (open) {
+                panel.open(Number(open.slice("--open=".length)));
+            }
+        }
     }
 }

@@ -16,6 +16,8 @@ FocusScope {
     property int openColumn: -1
     // The height of the slab while a column is open: the screen below the top bar.
     property real fullHeight: theme.unit * 40
+    // Whether the open todo column is editing a todo; the hint line follows it.
+    property bool todoEditing: false
 
     signal closeRequested
 
@@ -25,6 +27,9 @@ FocusScope {
             panel.focusColumn = column;
         }
         panel.openColumn = column;
+        if (column < 0) {
+            panel.forceActiveFocus(); // the overview's keys are the panel's own
+        }
     }
 
     // Steps one column left (-1) or right (+1), wrapping around.
@@ -161,7 +166,13 @@ FocusScope {
                             anchors.fill: parent
                             anchors.margins: theme.unit * 1.4
                             opacity: panel.openColumn >= 0 && panel.openColumn !== column.index ? 0.72 : 1
-                            sourceComponent: [todoOverview, projectStub, todayStub][column.index]
+                            focus: panel.openColumn === column.index
+                            sourceComponent: column.index === 0 && panel.openColumn === 0 ? todoOpen : [todoOverview, projectStub, todayStub][column.index]
+                            onLoaded: {
+                                if (panel.openColumn === column.index) {
+                                    (item as Item).forceActiveFocus();
+                                }
+                            }
                         }
 
                         MouseArea {
@@ -177,6 +188,18 @@ FocusScope {
                                 style: theme
                                 todos: panel.todos
                                 active: column.picked
+                            }
+                        }
+
+                        Component {
+                            id: todoOpen
+
+                            TodoOpen {
+                                focus: true
+                                style: theme
+                                todos: panel.todos
+                                onEditingChanged: panel.todoEditing = editing >= 0
+                                Component.onDestruction: panel.todoEditing = false
                             }
                         }
 
@@ -211,7 +234,18 @@ FocusScope {
                 Layout.fillWidth: true
                 Layout.margins: theme.unit * 0.6
                 Layout.leftMargin: theme.unit * 1.4
-                text: panel.openColumn < 0 ? "← →  pick     1 2 3  open     ↵  open     esc  close" : "← →  other columns     esc  back"
+                text: {
+                    if (panel.openColumn < 0) {
+                        return "← →  pick     1 2 3  open     ↵  open     esc  close";
+                    }
+                    if (panel.openColumn !== 0) {
+                        return "← → ⇥  other columns     esc  back";
+                    }
+                    if (panel.todoEditing) {
+                        return "↵  save     esc  cancel";
+                    }
+                    return "↵  tick / add     ⌃↵  add     ⌃E  edit     ⇧⌦  remove     ⌃H  done     ⇥  next column     esc  back";
+                }
                 color: theme.dim
                 font.family: theme.mono
                 font.pixelSize: theme.unit * 0.6

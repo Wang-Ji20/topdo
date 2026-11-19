@@ -26,9 +26,14 @@ add_executable(tst_todomodel qml/tst_todomodel.cpp)
 target_link_libraries(tst_todomodel PRIVATE topdoqml Qt6::Test)
 add_test(NAME tst_todomodel COMMAND tst_todomodel)
 
-# The plasmoid's QML, driven by real key presses (Qt Quick Test), offscreen.
-find_program(QMLTESTRUNNER qmltestrunner HINTS "${QT6_INSTALL_PREFIX}/${QT6_INSTALL_BINS}" REQUIRED)
-add_test(NAME tst_panel
-    COMMAND ${QMLTESTRUNNER} -input ${CMAKE_CURRENT_SOURCE_DIR}/qml/tst_panel.qml
-            -import ${QT_QML_OUTPUT_DIRECTORY})
-set_tests_properties(tst_panel PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+# The plasmoid's QML, driven by real key presses (Qt Quick Test), offscreen, with a fixture for
+# todo files; the tests are tests/qml/tst_*.qml.
+find_package(Qt6 REQUIRED COMPONENTS QuickTest)
+add_executable(tst_quick qml/tst_quick.cpp)
+target_link_libraries(tst_quick PRIVATE Qt6::QuickTest Qt6::Qml)
+target_compile_definitions(tst_quick PRIVATE
+    QUICK_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/qml"
+    TOPDO_QML_DIR="${QT_QML_OUTPUT_DIRECTORY}")
+add_dependencies(tst_quick topdoqml)
+add_test(NAME tst_quick COMMAND tst_quick)
+set_tests_properties(tst_quick PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
