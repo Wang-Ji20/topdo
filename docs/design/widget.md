@@ -119,8 +119,11 @@ comes from is an open question.
 - **Colour:** greys, plus the Plasma theme's highlight colour as the only
   accent (selection, progress, now). Red and amber only for late and soon
   due dates.
-- **Height:** about 500 px, so the overview breathes and the open todo
-  list shows a dozen rows.
+- **Height:** about 430 px, so the overview breathes and the open todo
+  list shows about ten rows.
+- **Contrast:** the glass is mostly opaque (about 78 %), so text stays
+  readable over any wallpaper; secondary text is a light grey, not a dim
+  one, and the narrow columns stay at about 70 % while another is open.
 
 ## How it is built
 
