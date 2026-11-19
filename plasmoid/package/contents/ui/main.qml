@@ -17,33 +17,13 @@ PlasmoidItem {
     // The badge is shown inline in the bar; the panel is our own dialog, not Plasma's popup.
     preferredRepresentation: fullRepresentation
 
-    fullRepresentation: Item {
-        Layout.preferredWidth: badge.implicitWidth
-        Layout.preferredHeight: badge.implicitHeight
+    fullRepresentation: Badge {
+        todos: todoModel
+        onClicked: panel.visible = !panel.visible
+    }
 
-        Rectangle {
-            id: badge
-
-            anchors.centerIn: parent
-            implicitWidth: badgeText.implicitWidth + Kirigami.Units.gridUnit
-            implicitHeight: badgeText.implicitHeight + Kirigami.Units.smallSpacing * 2
-            radius: height / 2
-            color: Qt.rgba(1, 1, 1, 0.06)
-            border.color: Qt.rgba(1, 1, 1, 0.3)
-
-            Text {
-                id: badgeText
-
-                anchors.centerIn: parent
-                text: "● topdo"
-                color: Kirigami.Theme.textColor
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: panel.visible = !panel.visible
-            }
-        }
+    TodoModel {
+        id: todoModel
     }
 
     PlasmaCore.Dialog {

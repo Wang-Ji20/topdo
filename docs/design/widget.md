@@ -17,8 +17,13 @@ large, built from circle, square and line.
             └───────────────────────────────────────┘
 ```
 
-- A pill with a thin plain border: a dot, the first open top-level todo,
-  the number of open top-level todos, and the next event of the day.
+- A pill with a metal edge: a ring in the highlight colour, the next todo
+  (see below), the number of open top-level todos, and, if any, the
+  number of late todos in the theme's warning colour. The next event of
+  the day joins it once the today column has real data; a stub event
+  would mislead in the real bar.
+- The next todo is the most urgent one: the earliest late or due-today
+  todo, otherwise the first open todo (`nextTodo()` in core).
 - It sits at the exact centre of the screen, whatever the width of the app
   menu on the left and the tray on the right.
 - A click, or a global shortcut (Meta+T), opens and closes the panel.
@@ -119,8 +124,10 @@ comes from is an open question.
 - **Bauhaus:** circle, square and line are the only shapes: circles for
   todos and the current time, squares for milestones and the selected
   column, lines for dividers and the day strip.
-- **Type:** Jost, a geometric face in the Futura tradition, for focal
+- **Type:** Poppins, a geometric face in the Futura tradition, for focal
   numbers, names and todo text; JetBrains Mono, small, for labels and data.
+  (The mockup uses Jost, which openSUSE doesn't package; Poppins is in
+  `google-poppins-fonts`.)
 - **Colour:** greys, plus the Plasma theme's highlight colour as the only
   accent (selection, progress, now). Red and amber only for late and soon
   due dates.
@@ -138,8 +145,15 @@ comes from is an open question.
 - A C++ QML plugin (`src/qml/`) offers the todos as a list model over the
   store, and watches the todo file, so edits from the CLI or a text editor
   show at once.
-- Centring: the widget fills the space between the app menu and the tray
-  and places the badge at the screen's centre within it.
+- **Centring:** the widget stands where the bar's spacer was, between the
+  app menu and the tray, and takes the free space. It places the pill at
+  the screen's centre, from its own position on screen
+  (`mapToGlobal`) and the screen's geometry, and recomputes whenever its
+  width changes. The app menu stretches too (its layout ends with a
+  filler item), and the bar splits free space between stretching
+  widgets; the badge asks for the whole screen width as its preferred
+  width, so the app menu keeps only its buttons. Checked in the real top
+  bar: the pill's centre is the screen's centre.
 - **Our own frame** (tried 2026-11-19): the badge opens a
   `PlasmaCore.Dialog` with `backgroundHints: NoBackground`, and the panel
   is drawn in QML. Without the theme's background KWin no longer blurs

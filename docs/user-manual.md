@@ -11,7 +11,8 @@ On openSUSE Tumbleweed:
 sudo zypper install cmake ninja gcc-c++ clang \
     kf6-extra-cmake-modules qt6-base-devel qt6-test-devel \
     qt6-declarative-devel qt6-declarative-tools \
-    libplasma6-devel kf6-kirigami-devel plasma6-sdk
+    libplasma6-devel kf6-kirigami-devel plasma6-sdk \
+    google-poppins-fonts jetbrains-mono-fonts
 ```
 
 | Package | Gives |
@@ -21,6 +22,7 @@ sudo zypper install cmake ninja gcc-c++ clang \
 | `qt6-declarative-devel`, `qt6-declarative-tools` | QML, plus `qmlformat` and `qmllint` |
 | `libplasma6-devel`, `kf6-kirigami-devel` | The Plasma widget API and Kirigami |
 | `plasma6-sdk` | `plasmoidviewer`, to run the widget in a window |
+| `google-poppins-fonts`, `jetbrains-mono-fonts` | The widget's typefaces (needed to run it, not to build) |
 | `clang` | `clang-format` and `clang-tidy` |
 
 ## Build and test
