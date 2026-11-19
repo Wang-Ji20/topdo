@@ -15,3 +15,4 @@ function(topdo_add_test name)
 endfunction()
 
 topdo_add_test(tst_document core/tst_document.cpp)
+topdo_add_test(tst_todos core/tst_todos.cpp)

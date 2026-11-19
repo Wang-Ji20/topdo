@@ -32,6 +32,11 @@ lines:  "- [ ] a", "- [x] b"
 file:   "- [ ] a\n- [x] b\n"     (written back)
 ```
 
+`findTodos` reads a `Document` line by line and returns a `TodoList`: the
+sections and the todos, each todo pointing at its line, its parent todo and
+its section. It applies the line rules of
+[design/format.md](design/format.md) and nothing more.
+
 **store** owns the file on disk. It reads the file, applies an edit through
 core, and writes the result atomically, so a crash never leaves a
 half-written file. When the file changes on disk (an edit in a text editor,
@@ -60,5 +65,5 @@ store  --changed-->  qml model  --> plasmoid redraws
 
 The CLI and the MCP server follow the same path from `store` down.
 
-So far only part of `core` exists: splitting a file into lines and joining
-it back. See [../PLAN.md](../PLAN.md).
+So far only part of `core` exists: reading and writing the lines, and
+finding the todos in them. See [../PLAN.md](../PLAN.md).
