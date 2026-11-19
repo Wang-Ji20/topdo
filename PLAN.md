@@ -16,3 +16,9 @@ long term.
 - [x] `core`: edits (add, toggle, edit text, remove).
 - [x] `store`: load, atomic save, update that starts from the file on disk,
       and the config file.
+
+## Milestone 2: command line
+
+- [ ] Decide the command design: [docs/design/cli.md](docs/design/cli.md).
+- [ ] `topdo list` and `topdo path`.
+- [ ] `topdo add`, `done`, `undone`, `edit`, `rm`.
