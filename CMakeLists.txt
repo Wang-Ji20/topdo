@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)   # for clangd and clang-tidy
+set(CMAKE_POSITION_INDEPENDENT_CODE ON) # the static libraries are linked into the QML plugin
 
 option(TOPDO_WERROR "Treat compiler warnings as errors" OFF)
 add_compile_options(-Wall -Wextra -Wpedantic)

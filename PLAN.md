@@ -30,4 +30,4 @@ long term.
       plasmoidviewer; see docs/design/widget.md).
 - [x] Check in the real top bar: the panel opens under the badge.
 - [x] `core`: which todos the panel lists, and the badge's next todo.
-- [ ] `qml`: a list model over the store that watches the todo file.
+- [x] `qml`: a list model over the store that watches the todo file.

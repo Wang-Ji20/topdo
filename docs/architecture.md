@@ -74,8 +74,13 @@ that names the file.
 logic of their own:
 
 - `qml` is the QML module `io.github.wangji20.topdo` that the plasmoid
-  imports. It will offer the todos as a list model; so far it has
-  `WindowEffects`, which asks KWin to blur behind the panel.
+  imports. `TodoModel` lists the todos the panel shows (after
+  `filterTodos`), with each todo's number, title, text, done state,
+  depth, section and due date as roles, and what the badge needs as
+  properties. Its `add`, `setDone`, `setText` and `remove` go through the
+  store's `update`, taking todo numbers as `topdo list` shows them; a
+  number that no longer names a todo changes nothing. `WindowEffects`
+  asks KWin to blur behind the panel.
 - `cli` maps command-line arguments to store calls.
 - `mcp` maps MCP tool calls (JSON-RPC over standard input and output) to
   store calls.
@@ -94,10 +99,12 @@ file changed on disk  -->  qml model reloads  -->  plasmoid redraws
 ```
 
 The qml model watches the file, so edits from anywhere (the popup, the CLI,
-a text editor) reach the popup the same way.
+a text editor) reach the popup the same way. It watches the folder as well
+as the file: an atomic save, by topdo or by an editor, replaces the file,
+which ends a watch on the old one.
 
 The CLI and the MCP server follow the same path from `store` down.
 
-So far `core`, `store` and `cli` exist; `qml` and the plasmoid are an
-experiment, and `mcp` doesn't exist yet.
+So far `core`, `store`, `cli` and `qml` exist; the plasmoid is a
+placeholder, and `mcp` doesn't exist yet.
 See [../PLAN.md](../PLAN.md).

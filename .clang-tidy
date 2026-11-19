@@ -10,7 +10,8 @@ Checks: >
   -readability-identifier-length,
   -readability-function-cognitive-complexity,
   -readability-redundant-access-specifiers,
-  -readability-convert-member-functions-to-static
+  -readability-convert-member-functions-to-static,
+  -performance-enum-size
 WarningsAsErrors: '*'
 HeaderFilterRegex: '^.*/src/.*'
 CheckOptions:
