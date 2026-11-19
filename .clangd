@@ -1,0 +1,4 @@
+# clangd: use the compile commands of the dev preset (build/dev), so it sees Qt's include paths
+# and the generated moc files. Run `cmake --preset dev` once after cloning.
+CompileFlags:
+  CompilationDatabase: build/dev

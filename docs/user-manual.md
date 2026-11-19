@@ -49,6 +49,14 @@ To replay a failure exactly, run the test again with that seed:
 TOPDO_SEED=313152176 ctest --preset dev
 ```
 
+## Editor support
+
+clangd (the C++ language server behind most editors' completion and
+diagnostics) reads the compile commands of the `dev` preset, as set in
+`.clangd`. Run `cmake --preset dev` once after cloning so that
+`build/dev/compile_commands.json` exists; until then clangd can't find the Qt
+headers.
+
 ## Format and lint
 
 ```sh
