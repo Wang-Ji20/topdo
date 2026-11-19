@@ -55,6 +55,7 @@ TodoList findTodos(const Document &document) {
         const QString &line = document.lines.at(i);
         if (isFence(line)) {
             inFence = !inFence;
+            popToParent(ancestors, indentation(line));
             continue;
         }
         if (inFence) {
@@ -67,6 +68,9 @@ TodoList findTodos(const Document &document) {
         }
         const std::optional<TodoLine> match = matchTodoLine(line);
         if (!match) {
+            if (!isBlank(line)) {
+                popToParent(ancestors, indentation(line)); // a note ends nesting at its depth
+            }
             continue;
         }
         const DueDate split = splitDueDate(match->text);

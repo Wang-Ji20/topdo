@@ -2,6 +2,8 @@
 add_library(topdocore STATIC
     document.cpp
     document.h
+    edits.cpp
+    edits.h
     todoline.cpp
     todoline.h
     todos.cpp

@@ -74,7 +74,8 @@ From stable to fast-changing. A layer may include only the layers above it.
 docs/design/format.md   the todo file format: the contract
         |
 src/core/               pure: parse(text) -> Document,
-        |               apply(Document, Edit) -> Document, render(Document) -> text
+        |               findTodos(Document), edits: Document -> Document,
+        |               render(Document) -> text
         |               value types only: no QObject, no I/O
 src/store/              file I/O: atomic save, file watcher, reload before write
         |

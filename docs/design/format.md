@@ -65,8 +65,11 @@ tell what topdo sees by looking at each line.
 ### Structure
 
 3. **A subtask is a todo indented more than the todo above it.** Its
-   parent is the nearest todo above it with less indentation, in the same
-   section. Subtasks can nest further. A tab counts as four spaces.
+   parent is the nearest todo above it with less indentation. Only blank
+   lines and lines indented more than the parent may come between them; any
+   other line, or a heading, ends the nesting. So a todo's subtasks are
+   exactly the todos among the indented lines under it. Subtasks can nest
+   further. A tab counts as four spaces.
    - Ticking a todo doesn't tick its subtasks, and ticking all subtasks
      doesn't tick their parent.
    - The badge counts only open top-level todos.
@@ -85,14 +88,19 @@ tell what topdo sees by looking at each line.
    - Ticking or unticking changes only the character between the brackets:
      a space becomes `x`; `x` or `X` becomes a space. The list marker stays.
    - Editing the text replaces only the text after the checkbox.
-   - Removing deletes the todo's line and the lines of its list item (its
-     subtasks and notes).
+   - Removing deletes the todo's line and the lines indented more than it
+     below it (its subtasks and notes), including blank lines between them.
+     Blank lines after the last indented line stay.
 7. **New todos are written as `- [ ] text`** and go:
    - into a given section: after the last line of that section's first run
-     of todos, or right after the heading if the section has none;
+     of todos, or right after the heading if the section has none (at the
+     top of the file for the unnamed section);
    - with no section given: after the last line of the first run of todos
      in the file;
    - into a file with no todos: at the end of the file.
+
+   A run of todos is a todo, its indented lines, and the todos that follow
+   directly, with no blank or other line between them.
 8. **Done todos stay where they are.** The popup collapses them into a
    "Done" group; the file doesn't change.
 9. **The file is UTF-8 text with `\n` line endings.** topdo also reads

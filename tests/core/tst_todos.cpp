@@ -193,17 +193,20 @@ class TestTodos : public QObject {
             "    - [ ] d",   // 3: under b (less than c, more than b)
             "\t- [ ] e",     // 4: a tab is four columns: under b
             "- [ ] f",       // 5: top level again
-            "Some note",     // other lines don't end nesting
             "  - [ ] g",     // 6: under f
+            "  A note",      // a note ends nesting at its indentation
+            "  - [ ] i",     // 7: still under f
+            "Some note",     // an unindented note ends all nesting
+            "  - [ ] j",     // 8: top level
             "# Heading",     // a heading ends nesting
-            "  - [ ] h",     // 7: top level of the new section
+            "  - [ ] h",     // 9: top level of the new section
         });
 
         QList<qsizetype> parents;
         for (const Todo &todo : list.todos) {
             parents.append(todo.parent);
         }
-        QCOMPARE(parents, (QList<qsizetype>{-1, 0, 1, 1, 1, -1, 5, -1}));
+        QCOMPARE(parents, (QList<qsizetype>{-1, 0, 1, 1, 1, -1, 5, 5, -1, -1}));
     }
 
     void splitsDueDates_data() {
