@@ -6,9 +6,13 @@ Each milestone ends in something usable. Bigger scope changes go here first.
    [PLAN.md](PLAN.md).
 2. ~~**Command line.**~~ Done. `topdo list`, `topdo add`, `topdo done`: the first way
    to use topdo for real, and a test bed for the store.
-3. **Plasma widget.** The badge in the middle of the top bar and the popup
-   with quick-add, tick off and edit. Installed and placed by the dotfiles.
+3. **Plasma widget.** The badge in the middle of the top bar and a panel
+   with three cards: todo (overview, then quick-add, tick off and edit),
+   project and today, the last two as stubs at first. Installed and placed
+   by the dotfiles.
 4. **MCP server.** `topdo mcp` offers list, add and tick-off tools to AI
    assistants.
-5. **Grow with use.** Candidates: due dates, sections by heading, a global
+5. **Project and today cards with real data.** Decide where they come from
+   (for example a git repository and a calendar) and fill the stubs.
+6. **Grow with use.** Candidates: due dates, sections by heading, a global
    shortcut, more widgets in the popup.
