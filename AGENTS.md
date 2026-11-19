@@ -112,7 +112,7 @@ plasmoid/               the Plasma widget, QML only: badge and popup
 
 ### C++
 
-- C++20, Qt 6, KDE Frameworks 6, CMake with extra-cmake-modules, Ninja.
+- C++23, Qt 6, KDE Frameworks 6, CMake with extra-cmake-modules, Ninja.
 - Formatting: `.clang-format` (LLVM-based, 4-space indent, 100 columns).
   Run `clang-format -i` on changed files before committing.
 - Naming follows Qt and KDE, since every API we call does: classes
@@ -120,8 +120,9 @@ plasmoid/               the Plasma widget, QML only: badge and popup
   constants `PascalCase`. File names are lowercase: `todomodel.cpp`.
 - Warnings are errors (`-Wall -Wextra -Werror` in the `dev` preset).
   `.clang-tidy` must report nothing on changed files.
-- Prefer value types, `std::optional` and `std::variant` (or a result type)
-  over sentinel values and out-parameters. Use `enum class` and exhaustive
+- Prefer value types, `std::optional`, and `std::expected` for operations
+  that can fail, over sentinel values and out-parameters. Use `enum class`
+  and exhaustive
   `switch` statements without a `default:`, so the compiler flags a missing
   case.
 - Keep `Q_OBJECT` classes small; anything that can be a free function in
