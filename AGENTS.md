@@ -43,11 +43,15 @@ concrete task needs it, not to anticipate every possible case. We start small
 and let the design grow with the requirements.
 
 - **Never lose the user's data.** The Markdown file belongs to the user. An
-  edit changes only the lines it touches; every other byte stays as written.
+  edit changes only the lines it touches; every other line keeps its content.
   Writes are atomic (`QSaveFile`). If the file changed on disk since it was
   read, reload and reapply the edit; never overwrite.
 - **The format is the contract.** `docs/design/format.md` defines what a
   todo file is. A format change starts there, with tests, before any code.
+- **Build for the cases that happen.** Prefer the plain, conventional
+  behaviour (UTF-8 text, `\n` line endings, a final newline) over machinery
+  for rare edge cases. If an edge case could really lose data, name it in
+  one line and let the maintainer decide; don't build for it unasked.
 - **Explicit over implicit.** Plain function calls and visible data flow over
   signal chains, global state and hidden conventions.
 - **Less state.** The core is pure functions on value types. Qt objects that
