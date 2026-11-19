@@ -20,5 +20,5 @@ long term.
 ## Milestone 2: command line
 
 - [x] Decide the command design: [docs/design/cli.md](docs/design/cli.md).
-- [ ] `topdo list` and `topdo path`.
+- [x] `topdo list` and `topdo path`.
 - [ ] `topdo add`, `done`, `undone`, `edit`, `rm`.

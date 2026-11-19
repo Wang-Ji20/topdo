@@ -14,7 +14,7 @@ $ topdo list
 ## Work
 2  - [ ] Write report due:2026-11-21
 3  - [ ] Plan trip
-5      - [ ] Book hotel
+5    - [ ] Book hotel
 ## Home
 6  * [ ] Call the bank
 $ topdo done 2
@@ -79,7 +79,6 @@ todo 9 ticks nothing.
   want to see; `--all` shows them.
 - **`rm` prints what it removed:** the other commands are silent too, and
   `list` shows the result.
-
 - **Renumbering after hiding done todos:** the number of a todo would then
   depend on the options of the last `list`.
 - **Ids stored in the file** (`- [ ] Buy milk id:3`): stable numbers, but

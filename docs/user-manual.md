@@ -1,7 +1,7 @@
 # User manual
 
-topdo has no features yet; this manual covers building and testing. It
-grows with each feature.
+topdo is at an early stage: so far there is the `topdo` command with `list`
+and `path`. This manual grows with each feature.
 
 ## Install the build dependencies
 
@@ -46,6 +46,22 @@ To replay a failure exactly, run the test again with that seed:
 ```sh
 TOPDO_SEED=313152176 ctest --preset dev
 ```
+
+## Use the `topdo` command
+
+The build puts the command at `build/dev/src/cli/topdo`;
+`cmake --install build/release` installs it into `/usr/local/bin`.
+
+```sh
+topdo list           # open todos, numbered, with the headings
+topdo list --all     # done todos too
+topdo path           # where the todo file is: $EDITOR "$(topdo path)"
+topdo --dir ~/x list # use another todo folder for one command
+```
+
+The todo folder is `~/Documents/todo` unless `~/.config/topdo/topdo.conf`
+says otherwise (`dir=~/somewhere`). The full design of the command is in
+[design/cli.md](design/cli.md).
 
 ## Editor support
 
