@@ -49,10 +49,35 @@ To replay a failure exactly, run the test again with that seed:
 TOPDO_SEED=313152176 ctest --preset dev
 ```
 
+## Install
+
+For your user only, without sudo:
+
+```sh
+cmake --preset release && cmake --build --preset release
+cmake --install build/release --prefix ~/.local
+```
+
+| Installs | Where |
+|---|---|
+| the `topdo` command | `~/.local/bin/topdo` |
+| the QML module | `~/.local/lib64/qt6/qml/io/github/wangji20/topdo/` |
+| the Plasma widget | `~/.local/share/plasma/plasmoids/io.github.wangji20.topdo/` |
+
+Plasma doesn't look for QML modules under `~/.local` by itself. Add the
+folder to `QML_IMPORT_PATH` in a script that Plasma runs at login, then log
+out and back in:
+
+```sh
+# ~/.config/plasma-workspace/env/topdo.sh
+export QML_IMPORT_PATH="$HOME/.local/lib64/qt6/qml${QML_IMPORT_PATH:+:$QML_IMPORT_PATH}"
+```
+
+Then add the widget "topdo" to the top bar, in place of a spacer.
+
 ## Use the `topdo` command
 
-The build puts the command at `build/dev/src/cli/topdo`;
-`cmake --install build/release` installs it into `/usr/local/bin`.
+Without installing, the build puts the command at `build/dev/src/cli/topdo`.
 
 ```sh
 topdo list                         # open todos, numbered, with the headings
