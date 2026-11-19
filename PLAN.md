@@ -25,5 +25,5 @@ long term.
 
 ## Milestone 3: Plasma widget
 
-- [ ] Decide the widget design: [docs/design/widget.md](docs/design/widget.md).
+- [x] Decide the widget design: [docs/design/widget.md](docs/design/widget.md).
 - [ ] Experiment: our own glass frame and gradient border on a Plasma popup.

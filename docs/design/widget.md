@@ -1,6 +1,6 @@
 # The Plasma widget
 
-Status: Draft, 2026-11-19.
+Status: Decided, 2026-11-19.
 
 The widget is a badge in the middle of the top bar and a panel that opens
 under it. The panel is one slab of glass divided into three columns:
