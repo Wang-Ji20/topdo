@@ -75,13 +75,6 @@ FocusScope {
         event.accepted = true;
     }
 
-    Behavior on implicitHeight {
-        NumberAnimation {
-            duration: 220
-            easing.type: Easing.OutCubic
-        }
-    }
-
     Style {
         id: theme
     }
@@ -142,13 +135,6 @@ FocusScope {
                         height: columns.height
                         clip: true
 
-                        Behavior on width {
-                            NumberAnimation {
-                                duration: 220
-                                easing.type: Easing.OutCubic
-                            }
-                        }
-
                         Rectangle {
                             anchors.fill: parent
                             visible: panel.openColumn === column.index
@@ -171,7 +157,21 @@ FocusScope {
                             onLoaded: {
                                 if (panel.openColumn === column.index) {
                                     (item as Item).forceActiveFocus();
+                                    fadeIn.restart();
                                 }
+                            }
+
+                            // Sizes change at once: animating them resizes the window every
+                            // frame. Only the opened column's content fades in, on the render
+                            // thread.
+                            OpacityAnimator {
+                                id: fadeIn
+
+                                target: column
+                                from: 0.4
+                                to: 1
+                                duration: 120
+                                easing.type: Easing.OutQuad
                             }
                         }
 

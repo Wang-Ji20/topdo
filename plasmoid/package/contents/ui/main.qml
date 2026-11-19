@@ -38,8 +38,8 @@ PlasmoidItem {
         type: PlasmaCore.Dialog.PopupMenu
         backgroundHints: PlasmaCore.Dialog.NoBackground
         hideOnWindowDeactivate: true
-        onWidthChanged: blur()
-        onHeightChanged: blur()
+        onWidthChanged: Qt.callLater(blur) // one blur request per resize, not one per side
+        onHeightChanged: Qt.callLater(blur)
         // Every time it opens: the overview, with the keyboard focus on the panel.
         onVisibleChanged: {
             if (visible) {

@@ -172,7 +172,13 @@ comes from is an open question.
   and the due-date label. The open todo column binds the model's filter
   to what is typed (not while editing) and clears it when it closes, so
   the overview always sees the whole list. Keys it doesn't use go on to
-  the panel: Tab always, Esc and ← → only with an empty input. `plasmoid/preview.qml` shows the panel in a
+  the panel: Tab always, Esc and ← → only with an empty input.
+- **No geometry animations.** The panel is a window, so animating its
+  height resizes a Wayland window and re-requests the blur on every
+  frame, and animating column widths re-lays out every column; both made
+  opening a column lag. Sizes change at once; only the opened column's
+  content fades in (`OpacityAnimator`, on the render thread), and blur is
+  requested once per resize. `plasmoid/preview.qml` shows the panel in a
   plain window for development, without Plasma or blur.
 - **The badge is the widget's `fullRepresentation`**, shown inline in the
   bar (`preferredRepresentation: fullRepresentation`). With only a
