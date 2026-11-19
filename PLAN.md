@@ -34,4 +34,4 @@ long term.
 - [x] The badge: next todo, open and late counts, at the screen's centre.
 - [x] The overview: three columns, project and today as stubs.
 - [x] The open todo column: input line, filtering, keys.
-- [ ] Install and placement through the dotfiles.
+- [x] Install and placement through the dotfiles (clone of `main` once it exists).
