@@ -3,10 +3,11 @@
 Status: Draft, 2026-11-19.
 
 The widget is a badge in the middle of the top bar and a panel that opens
-under it. The panel holds three cards side by side: **todo**, **project**
-and **today**. It opens as a calm overview; a card you select expands into
-its working view, and only then does editing appear. The look is plain: a
-dark, translucent panel, neutral greys and one muted accent.
+under it. The panel is one slab of glass divided into three columns:
+**todo**, **project** and **today**. It opens as a calm overview; a column
+you open widens into its working view, and only then does editing appear.
+The look is glass and metal with a Bauhaus geometry: few elements, set
+large, built from circle, square and line.
 
 ## Badge
 
@@ -25,27 +26,38 @@ dark, translucent panel, neutral greys and one muted accent.
 ## Panel: overview
 
 ```
-╭────────────────────────────────────────────────────────────────────────────╮
-│ ┌─ TODO ─────── 1 ─┐ ┌─ PROJECT ──── 2 ─┐ ┌─ TODAY ────────── 3 ─┐ │
-│ │ 5  open · 2 done │ │ topdo  2 of 5    │ │ in 28 min · 15:00    │ │
-│ │ ███████░░░░░░░░  │ │ ██ ██ ▓▓ ░░ ░░   │ │ Review               │ │
-│ │ ▢ Buy milk       │ │ now: Plasma      │ │ 14:00 Deep work      │ │
-│ │ ▢ Write report Sat│ │ · Decide design  │ │ ── 14:32 ─────────   │ │
-│ │ ▢ Plan trip      │ │ · Experiment     │ │ 15:00 Review         │ │
-│ │ ▢ └ Book hotel  …│ │ last commit …    │ │ 17:00 Gym            │ │
-│ └──────────────────┘ └──────────────────┘ └──────────────────────┘ │
-│ ← → pick   1 2 3 jump   ↵ expand   esc close                       │
-╰────────────────────────────────────────────────────────────────────────────╯
+╭─────────────────────────────────────────────────────────────────────╮
+│ ■ 01 TODO          │ □ 02 PROJECT        │ □ 03 TODAY              │
+│                    │                     │                         │
+│  ◔  5              │  topdo              │  15:00                  │
+│ open · 2 done      │  ■ ■ ▣ □ □ □        │  Review                 │
+│ ────────────────── │ ─────────────────── │  in 28 min · with Mia   │
+│ NEXT               │ MILESTONE 3 OF 6    │                         │
+│ Book hotel         │ Plasma widget       │                         │
+│ yesterday          │ Experiment: frame   │                         │
+│                    │                     │                         │
+│ ○ Buy milk         │                     │  ━━ ━ ━━━  ●━  ━  ━━    │
+│ ○ Write report     │                     │  08     14      20      │
+├─────────────────────────────────────────────────────────────────────┤
+│ ← → pick   1 2 3 open   ↵ open   esc close                         │
+╰─────────────────────────────────────────────────────────────────────╯
 ```
 
-- Each card shows a summary first: a big number, a thin progress bar, and
-  the few items that matter now. Nothing is editable here.
-- **← →** or **1 2 3** pick a card; **Enter** or a click expands it.
+- **One focal element per column**, set large in a geometric face: the
+  number of open todos (with a ring for the share done), the project's
+  name, the time of the next event. The eye lands there first.
+- **Then one "next" item** under a hairline: the most urgent todo (late,
+  then due today, then the first), the current milestone, the next
+  event's name and countdown.
+- **Then quiet details**, small and dim: a few more todos, milestone
+  squares, the day as a strip from 08:00 to 20:00 with a circle at now.
+- Nothing is editable here. **← →** or **1 2 3** pick a column; **Enter**
+  or a click opens it.
 
 ## Panel: an expanded card
 
-The expanded card takes about half the width; the other two stay visible,
-narrower. **Esc** steps back: it clears the input, then returns to the
+The open column takes about half the width; the other two stay visible,
+narrower and dimmed. **Esc** steps back: it clears the input, then returns to the
 overview, then closes the panel.
 
 ### Todo
@@ -94,11 +106,21 @@ comes from is an open question.
 
 ## Look
 
-- A dark, translucent panel with the desktop blurred behind it (KWin's
-  blur), a thin plain border, round corners (about 14 px).
-- Neutral greys and one muted accent, used for selection, progress and the
-  current time. Red and amber appear only for late and soon due dates.
-- JetBrains Mono throughout; card names in small spaced capitals.
+- **Glass:** one translucent slab with the desktop blurred behind it
+  (KWin's blur) and a faint diagonal sheen.
+- **Metal:** the slab's edge is a thin border that is light at the top and
+  darker below, like brushed metal catching light. Columns are divided by
+  hairlines, not boxed as cards.
+- **Bauhaus:** circle, square and line are the only shapes: circles for
+  todos and the current time, squares for milestones and the selected
+  column, lines for dividers and the day strip.
+- **Type:** Jost, a geometric face in the Futura tradition, for focal
+  numbers, names and todo text; JetBrains Mono, small, for labels and data.
+- **Colour:** greys, plus the Plasma theme's highlight colour as the only
+  accent (selection, progress, now). Red and amber only for late and soon
+  due dates.
+- **Height:** about 500 px, so the overview breathes and the open todo
+  list shows a dozen rows.
 
 ## How it is built
 
@@ -110,17 +132,14 @@ comes from is an open question.
 - Centring: the widget fills the space between the app menu and the tray
   and places the badge at the screen's centre within it.
 
-## Open questions
+## Decisions on the earlier open questions
 
-- **Accent colour:** the theme's highlight colour (the agreement says to
-  take colours from the theme), or a fixed muted blue-grey?
-- **Our own frame on a Plasma popup:** a plasmoid's popup gets the Plasma
-  theme's frame. Drawing our own needs either a popup without the theme
-  background or a separate window placed through layer-shell. This needs a
-  short experiment before anything else.
-- **Where project and today come from:** for example a git repository and
-  its `ROADMAP.md` for the project, and a calendar (an `.ics` file or
-  KDE's calendar) for today. Until decided, both cards are stubs.
+- **Accent:** the Plasma theme's highlight colour.
+- **Our own frame:** first a short experiment, to find out whether a
+  Plasma popup can drop the theme's frame or a layer-shell window is
+  needed.
+- **Project and today data:** stubs for now; their sources (for example
+  a git repository and a calendar) are milestone 5 of the roadmap.
 
 ## Rejected options
 
@@ -128,5 +147,7 @@ comes from is an open question.
   needs the mouse for everything.
 - **A colourful gradient border** (Hyprland's cyan to green): too loud
   next to the rest of the desktop.
+- **Boxed cards with many small facts:** read like a web dashboard, with
+  nowhere for the eye to land.
 - **Editing controls always visible:** the overview should read at a
   glance; editing appears only in the selected card and row.
