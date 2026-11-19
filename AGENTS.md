@@ -48,10 +48,14 @@ and let the design grow with the requirements.
   read, reload and reapply the edit; never overwrite.
 - **The format is the contract.** `docs/design/format.md` defines what a
   todo file is. A format change starts there, with tests, before any code.
-- **Build for the cases that happen.** Prefer the plain, conventional
-  behaviour (UTF-8 text, `\n` line endings, a final newline) over machinery
-  for rare edge cases. If an edge case could really lose data, name it in
-  one line and let the maintainer decide; don't build for it unasked.
+- **Keep it simple, stupid (KISS), the Unix way.** Each part does one
+  thing well. Plain text is the interface: the todo file is readable and
+  editable by hand, and the `topdo` command composes with `grep`, pipes and
+  scripts. Prefer simple rules a user can predict from the file over
+  faithful emulation of a standard. Prefer the conventional behaviour
+  (UTF-8 text, `\n` line endings, a final newline) over machinery for rare
+  edge cases. If an edge case could really lose data, name it in one line
+  and let the maintainer decide; don't build for it unasked.
 - **Explicit over implicit.** Plain function calls and visible data flow over
   signal chains, global state and hidden conventions.
 - **Less state.** The core is pure functions on value types. Qt objects that
@@ -136,8 +140,6 @@ plasmoid/               the Plasma widget, QML only: badge and popup
 
 - The repo builds and tests with the libraries packaged by the distribution
   (listed in `docs/user-manual.md`). Nothing third-party is vendored.
-- Outside code (for example cmark-gfm) may be used as a **test oracle
-  only**. Every test that needs it skips cleanly when it's missing.
 - Downloading, building or running outside code needs the maintainer's
   explicit permission.
 
@@ -150,11 +152,9 @@ plasmoid/               the Plasma widget, QML only: badge and popup
   have no property-testing library, so `tests/` holds a small generator of
   random todo files. It takes a seed and prints it when a test fails, so
   every failure can be replayed. Core properties:
-  - render(parse(text)) == text, byte for byte.
+  - render(parse(text)) == text for a file with `\n` line endings and a
+    final newline.
   - An edit changes only the lines of the items it touches.
-- **Differential tests** against an independent oracle where one exists:
-  cmark-gfm decides which lines are task-list items, and our parser must
-  agree with it.
 - Every bug fixed gets a regression test first.
 
 ## Documentation

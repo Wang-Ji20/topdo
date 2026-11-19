@@ -49,26 +49,30 @@ keeps them but never shows or changes them.
 
 ### What a todo is
 
-1. **A todo is a task list item:** a bullet list marker (`-`, `*` or `+`),
-   a space, a checkbox, a space, and the text.
-   - `[ ]` means open; `[x]` and `[X]` mean done.
-   - Ordered list items (`1. [ ] text`) are not todos; they are other lines.
-2. **Everything else is an other line**, kept byte for byte: headings,
-   paragraphs, blank lines, notes under a todo, and lines that only look
-   like todos, such as those inside a code block.
+topdo reads the file line by line with the simple rules below. They follow
+how Markdown task lists look, but topdo doesn't implement Markdown: you can
+tell what topdo sees by looking at each line.
 
-The parser must agree with a real Markdown parser on rule 1; the tests
-compare it against cmark-gfm on bullet lists.
+1. **A todo is a line of the form `- [ ] text`:** optional indentation, a
+   bullet (`-`, `*` or `+`), spaces, a checkbox, spaces, and the text.
+   - `[ ]` means open; `[x]` and `[X]` mean done.
+   - Numbered items (`1. [ ] text`) are not todos.
+2. **Everything else is an other line**, kept as written: headings,
+   paragraphs, blank lines and notes. Lines between two code fences (lines
+   starting with ```` ``` ```` or `~~~`) are always other lines, even when
+   they look like todos.
 
 ### Structure
 
-3. **A subtask is a todo nested in another todo's list item**, by
-   indentation, as Markdown defines it. Subtasks can nest further.
+3. **A subtask is a todo indented more than the todo above it.** Its
+   parent is the nearest todo above it with less indentation, in the same
+   section. Subtasks can nest further. A tab counts as four spaces.
    - Ticking a todo doesn't tick its subtasks, and ticking all subtasks
      doesn't tick their parent.
    - The badge counts only open top-level todos.
 4. **A heading starts a section** named by the heading's text. Only ATX
-   headings count (`#` to `######` at the start of a line). Todos before
+   headings count: `#` to `######` and a space at the start of a line,
+   outside code fences. Todos before
    the first heading belong to an unnamed section.
 5. **A due date is a `due:YYYY-MM-DD` word** in the todo's text, separated
    from other words by spaces. The popup shows it as a date and leaves it
@@ -118,6 +122,7 @@ compare it against cmark-gfm on bullet lists.
 | Read all bullet markers and `[X]`; write `- [ ]` and `[x]` | Only `- [ ]`: todos written with `*` would silently disappear |
 | New todos at the end of the first run of todos | At the end of the file: they can land below unrelated notes |
 | Nested todos are subtasks | A flat list: loses the structure the user wrote |
+| Simple line rules | Follow CommonMark exactly (lazy lines, list item content columns): hundreds of lines of rules nobody can predict by looking at the file |
 | Headings are sections | One flat list: no place to keep work and home todos apart |
 | `due:YYYY-MM-DD` | Obsidian Tasks' `📅 2026-11-21`: awkward to type in a terminal |
 | One folder in a shared config file | Per-frontend settings: the widget and CLI can drift to different files |

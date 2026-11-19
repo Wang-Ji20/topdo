@@ -13,6 +13,5 @@ long term.
 - [x] `core`: split a file into lines and join it back, with the round-trip
       property test and the random-file generator.
 - [ ] `core`: find the todos, subtasks, sections and due dates in the lines.
-- [ ] `core`: differential test against cmark-gfm.
 - [ ] `core`: edits (add, toggle, edit text, remove).
 - [ ] `store`: atomic save, file watcher, reload before write.

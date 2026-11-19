@@ -22,9 +22,6 @@ dock, the wallpaper and the system settings.
 assistants such as Claude call tools that a program offers. topdo's MCP
 server offers tools to list, add and tick off todos.
 
-**Oracle.** An independent implementation that a test compares our code
-against. If both give the same answer on many inputs, ours is likely right.
-
 **Other line.** Any line of the todo file that isn't a todo: a heading, a
 note, a blank line. topdo keeps other lines exactly as written.
 

@@ -12,7 +12,6 @@ sudo zypper install cmake ninja gcc-c++ clang \
     kf6-extra-cmake-modules qt6-base-devel qt6-test-devel \
     qt6-declarative-devel qt6-declarative-tools \
     libplasma6-devel kf6-kirigami-devel plasma6-sdk
-sudo zypper install cmark-gfm-devel   # optional: the oracle for parser tests
 ```
 
 | Package | Gives |
@@ -23,7 +22,6 @@ sudo zypper install cmark-gfm-devel   # optional: the oracle for parser tests
 | `libplasma6-devel`, `kf6-kirigami-devel` | The Plasma widget API and Kirigami |
 | `plasma6-sdk` | `plasmoidviewer`, to run the widget in a window |
 | `clang` | `clang-format` and `clang-tidy` |
-| `cmark-gfm-devel` | The reference Markdown parser for differential tests |
 
 ## Build and test
 

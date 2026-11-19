@@ -20,8 +20,8 @@ plasmoid/               the badge and popup in the top bar (QML)
 
 **core** turns text into a `Document` and back, and applies edits to a
 `Document`. It does no I/O and holds no state, so tests can call it
-directly. Its central rule: rendering an unchanged document gives back the
-original text byte for byte.
+directly. Its central rule: rendering an unchanged document gives back
+every line as it was written.
 
 A `Document` is the file's text as a list of lines, without line endings.
 Rendering joins them with `\n` and adds a final newline:
