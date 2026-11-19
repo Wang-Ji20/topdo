@@ -1,6 +1,6 @@
 # The `topdo` command
 
-Status: Draft, 2026-11-19.
+Status: Decided, 2026-11-19.
 
 `topdo` reads and edits the todo file from a terminal or a script. It
 follows the Unix conventions: plain text output, one todo per line, nothing
@@ -73,12 +73,12 @@ $ $EDITOR "$(topdo path)"
 Nothing is changed when any argument is wrong: `topdo done 2 9` with no
 todo 9 ticks nothing.
 
-## Open questions
-
-- Should `list` show done todos by default, with `--open` to hide them?
-- `rm` removes without asking. Should it print what it removed?
-
 ## Rejected options
+
+- **`list` shows done todos by default:** they are what you usually don't
+  want to see; `--all` shows them.
+- **`rm` prints what it removed:** the other commands are silent too, and
+  `list` shows the result.
 
 - **Renumbering after hiding done todos:** the number of a todo would then
   depend on the options of the last `list`.
