@@ -1,0 +1,13 @@
+{
+    "KPlugin": {
+        "Authors": [{ "Name": "hortensia" }],
+        "Description": "A todo list in the top bar",
+        "Icon": "view-task",
+        "Id": "io.github.wangji20.topdo",
+        "License": "MIT",
+        "Name": "topdo",
+        "Version": "0.1"
+    },
+    "KPackageStructure": "Plasma/Applet",
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

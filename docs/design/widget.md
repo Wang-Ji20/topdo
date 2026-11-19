@@ -140,13 +140,21 @@ comes from is an open question.
   show at once.
 - Centring: the widget fills the space between the app menu and the tray
   and places the badge at the screen's centre within it.
+- **Our own frame** (experiment, 2026-11-19): the badge opens a
+  `PlasmaCore.Dialog` with `backgroundHints: NoBackground`, and the panel
+  is drawn in QML. Without the theme's background KWin no longer blurs
+  behind the dialog, so the QML plugin's `WindowEffects.blurBehind()` asks
+  for it (`KWindowEffects`, KDE Frameworks), with round corners. In
+  `plasmoidviewer` this gives a transparent, blurred slab with our border.
+  Placing it under the badge still has to be checked in a real panel,
+  because `plasmoidviewer` doesn't create the badge.
 
 ## Decisions on the earlier open questions
 
 - **Accent:** the Plasma theme's highlight colour.
-- **Our own frame:** first a short experiment, to find out whether a
-  Plasma popup can drop the theme's frame or a layer-shell window is
-  needed.
+- **Our own frame:** a Plasma dialog without the theme's background,
+  plus KWin's blur requested by the QML plugin; no layer-shell window is
+  needed. See "How it is built".
 - **Project and today data:** stubs for now; their sources (for example
   a git repository and a calendar) are milestone 5 of the roadmap.
 

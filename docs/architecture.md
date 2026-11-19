@@ -68,7 +68,9 @@ that names the file.
 **Frontends** translate between their world and the store, and hold no
 logic of their own:
 
-- `qml` offers the todos as a list model that the plasmoid displays.
+- `qml` is the QML module `io.github.wangji20.topdo` that the plasmoid
+  imports. It will offer the todos as a list model; so far it has
+  `WindowEffects`, which asks KWin to blur behind the panel.
 - `cli` maps command-line arguments to store calls.
 - `mcp` maps MCP tool calls (JSON-RPC over standard input and output) to
   store calls.
@@ -91,6 +93,6 @@ a text editor) reach the popup the same way.
 
 The CLI and the MCP server follow the same path from `store` down.
 
-So far `core`, `store` and `cli` exist; `qml`, `mcp` and the plasmoid
-don't yet.
+So far `core`, `store` and `cli` exist; `qml` and the plasmoid are an
+experiment, and `mcp` doesn't exist yet.
 See [../PLAN.md](../PLAN.md).

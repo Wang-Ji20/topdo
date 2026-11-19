@@ -92,4 +92,14 @@ qmllint <changed .qml files>
 ```
 
 `qmlformat` and `qmllint` are installed in `/usr/lib64/qt6/bin/`, which is
-not on `PATH`; call them with that prefix or add it to `PATH`.
+not on `PATH`; call them with that prefix or add it to `PATH`. Give
+`qmllint` the built QML module with `-I build/dev/qml`.
+
+## Try the widget
+
+```sh
+QML_IMPORT_PATH=$PWD/build/dev/qml plasmoidviewer -c org.kde.panel -a $PWD/plasmoid/package
+```
+
+`plasmoidviewer` shows the panel but not the badge in the top bar, so it
+can't show where the panel opens.

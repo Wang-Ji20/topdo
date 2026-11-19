@@ -26,4 +26,6 @@ long term.
 ## Milestone 3: Plasma widget
 
 - [x] Decide the widget design: [docs/design/widget.md](docs/design/widget.md).
-- [ ] Experiment: our own glass frame and gradient border on a Plasma popup.
+- [x] Experiment: our own glass frame on a Plasma popup (works in
+      plasmoidviewer; see docs/design/widget.md).
+- [ ] Check in the real top bar: the panel opens under the badge.

@@ -12,12 +12,16 @@ if(TOPDO_WERROR)
     add_compile_options(-Werror)
 endif()
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Test)
-qt_standard_project_setup()
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Test Quick)
+find_package(KF6WindowSystem REQUIRED)
+qt_standard_project_setup(REQUIRES 6.5)
+# QML modules go to build/<preset>/qml/<uri as path>/, the layout QML_IMPORT_PATH expects.
+set(QT_QML_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/qml)
 
 enable_testing()
 
 add_subdirectory(src/core)
 add_subdirectory(src/store)
 add_subdirectory(src/cli)
+add_subdirectory(src/qml)
 add_subdirectory(tests)
