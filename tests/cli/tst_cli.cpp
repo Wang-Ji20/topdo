@@ -55,6 +55,14 @@ class Cli {
         return result;
     }
 
+    [[nodiscard]] QByteArray contents() const {
+        QFile file(todoFile());
+        if (!file.open(QIODevice::ReadOnly)) {
+            return {};
+        }
+        return file.readAll();
+    }
+
     [[nodiscard]] QString todoFile() const { return m_dir.filePath("todo.md"); }
 
   private:
@@ -135,6 +143,112 @@ class TestCli : public QObject {
         QCOMPARE(result.status, 2);
         QVERIFY2(result.err.startsWith(message), qPrintable(result.err));
         QVERIFY(result.err.contains("Usage:"));
+    }
+
+    void addsTodos() {
+        const Cli cli(exampleFile());
+
+        const Result first = cli.run({"add", "Pay", "rent", "due:2026-12-01"});
+        const Result second = cli.run({"add", "Water", "plants", "--section", "Home"});
+
+        QCOMPARE(first.status, 0);
+        QCOMPARE(first.out, QString()); // silent on success
+        QCOMPARE(second.status, 0);
+        QVERIFY(cli.contents().startsWith("- [ ] Buy milk\n- [ ] Pay rent due:2026-12-01\n"));
+        QVERIFY(cli.contents().contains("- [x] Renew passport\n- [ ] Water plants\n"));
+    }
+
+    void addCreatesTheFile() {
+        const Cli cli;
+
+        QCOMPARE(cli.run({"add", "first"}).status, 0);
+        QCOMPARE(cli.contents(), QByteArray("- [ ] first\n"));
+    }
+
+    void addKeepsOneTodoOnOneLine() {
+        const Cli cli;
+
+        QCOMPARE(cli.run({"add", "two\nlines"}).status, 0);
+        QCOMPARE(cli.contents(), QByteArray("- [ ] two lines\n"));
+    }
+
+    void ticksAndUnticks() {
+        const Cli cli(exampleFile());
+
+        QCOMPARE(cli.run({"done", "1", "6"}).status, 0);
+        QCOMPARE(cli.run({"undone", "4"}).status, 0);
+
+        QVERIFY(cli.contents().startsWith("- [x] Buy milk\n"));
+        QVERIFY(cli.contents().contains("* [x] Call the bank\n"));
+        QVERIFY(cli.contents().contains("  - [ ] Book flight\n"));
+    }
+
+    void editsText() {
+        const Cli cli(exampleFile());
+
+        QCOMPARE(cli.run({"edit", "2", "Write", "the", "report"}).status, 0);
+
+        QVERIFY(cli.contents().contains("\n- [ ] Write the report\n"));
+    }
+
+    // Numbers refer to the list before the command: removing 3 (with its subtasks 4 and 5)
+    // and 7 removes those todos, whatever order they are given in.
+    void removesTodos() {
+        const Cli cli(exampleFile());
+
+        QCOMPARE(cli.run({"rm", "7", "3", "4"}).status, 0);
+
+        const Result list = cli.run({"list", "--all"});
+        QCOMPARE(list.out,
+                 QString("1  - [ ] Buy milk\n"
+                         "## Work\n"
+                         "2  - [ ] Write report due:2026-11-21\n"
+                         "## Home\n"
+                         "3  * [ ] Call the bank\n"));
+    }
+
+    void changesNothingOnABadArgument_data() {
+        QTest::addColumn<QStringList>("arguments");
+        QTest::addColumn<QString>("message");
+
+        QTest::newRow("number too high") << QStringList{"done", "2", "9"} << "topdo: no todo 9\n";
+        QTest::newRow("zero") << QStringList{"rm", "0"} << "topdo: no todo 0\n";
+        QTest::newRow("not a number") << QStringList{"undone", "x"} << "topdo: no todo x\n";
+        QTest::newRow("unknown section")
+            << QStringList{"add", "a", "--section", "Garden"} << "topdo: no section \"Garden\"\n";
+    }
+
+    void changesNothingOnABadArgument() {
+        QFETCH(QStringList, arguments);
+        QFETCH(QString, message);
+        const Cli cli(exampleFile());
+
+        const Result result = cli.run(arguments);
+
+        QCOMPARE(result.status, 1);
+        QCOMPARE(result.err, message);
+        QCOMPARE(cli.contents(), exampleFile());
+    }
+
+    void needsArguments_data() {
+        QTest::addColumn<QStringList>("arguments");
+
+        QTest::newRow("add") << QStringList{"add"};
+        QTest::newRow("done") << QStringList{"done"};
+        QTest::newRow("rm") << QStringList{"rm"};
+        QTest::newRow("edit without text") << QStringList{"edit", "1"};
+        QTest::newRow("edit") << QStringList{"edit"};
+    }
+
+    void needsArguments() {
+        QFETCH(QStringList, arguments);
+        const Cli cli(exampleFile());
+
+        const Result result = cli.run(arguments);
+
+        QCOMPARE(result.status, 2);
+        QVERIFY(result.err.contains("Usage:"));
+        QCOMPARE(cli.contents(), exampleFile());
     }
 };
 

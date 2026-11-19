@@ -21,4 +21,4 @@ long term.
 
 - [x] Decide the command design: [docs/design/cli.md](docs/design/cli.md).
 - [x] `topdo list` and `topdo path`.
-- [ ] `topdo add`, `done`, `undone`, `edit`, `rm`.
+- [x] `topdo add`, `done`, `undone`, `edit`, `rm`.

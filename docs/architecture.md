@@ -91,5 +91,6 @@ a text editor) reach the popup the same way.
 
 The CLI and the MCP server follow the same path from `store` down.
 
-So far `core`, `store` and part of `cli` exist.
+So far `core`, `store` and `cli` exist; `qml`, `mcp` and the plasmoid
+don't yet.
 See [../PLAN.md](../PLAN.md).

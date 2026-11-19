@@ -1,7 +1,7 @@
 # User manual
 
-topdo is at an early stage: so far there is the `topdo` command with `list`
-and `path`. This manual grows with each feature.
+topdo is at an early stage: so far there is the `topdo` command. This
+manual grows with each feature.
 
 ## Install the build dependencies
 
@@ -53,11 +53,22 @@ The build puts the command at `build/dev/src/cli/topdo`;
 `cmake --install build/release` installs it into `/usr/local/bin`.
 
 ```sh
-topdo list           # open todos, numbered, with the headings
-topdo list --all     # done todos too
-topdo path           # where the todo file is: $EDITOR "$(topdo path)"
-topdo --dir ~/x list # use another todo folder for one command
+topdo list                         # open todos, numbered, with the headings
+topdo list --all                   # done todos too
+topdo add Pay rent due:2026-12-01  # add a todo after the first run of todos
+topdo add Water plants --section Home
+topdo done 2 5                     # tick todos 2 and 5
+topdo undone 2                     # untick todo 2
+topdo edit 3 Call the bank today   # replace the text of todo 3
+topdo rm 4                         # remove todo 4 with its subtasks and notes
+topdo path                         # where the file is: $EDITOR "$(topdo path)"
+topdo --dir ~/x list               # use another todo folder for one command
 ```
+
+A todo's number is its position among all todos in the file, so it stays
+the same until todos above it are added or removed. Commands print nothing
+when they succeed. When an argument is wrong, for example a number that
+isn't a todo, they print an error and change nothing.
 
 The todo folder is `~/Documents/todo` unless `~/.config/topdo/topdo.conf`
 says otherwise (`dir=~/somewhere`). The full design of the command is in
