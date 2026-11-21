@@ -15,6 +15,9 @@ Item {
     required property TodoModel todos
     // The day's next event, as "15:00 Review"; empty for none.
     property string event: ""
+    // The pill, at the screen's centre: the panel opens under it, not under the whole badge,
+    // which spans the free space of the bar.
+    readonly property alias pillItem: pill
 
     signal clicked
 

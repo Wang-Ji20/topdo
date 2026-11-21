@@ -60,7 +60,7 @@ PlasmoidItem {
             }
         }
 
-        visualParent: root.fullRepresentationItem
+        visualParent: (root.fullRepresentationItem as Badge)?.pillItem ?? null
         location: PlasmaCore.Types.Floating
         type: PlasmaCore.Dialog.PopupMenu
         backgroundHints: PlasmaCore.Dialog.NoBackground

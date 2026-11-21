@@ -170,6 +170,9 @@ is in [project-today.md](project-today.md).
   widgets; the badge asks for the whole screen width as its preferred
   width, so the app menu keeps only its buttons. Checked in the real top
   bar with one screen: the pill's centre is the screen's centre.
+- **The panel opens under the pill,** not under the whole badge item:
+  the item spans the free space between the app menu and the tray, so
+  its centre is not the screen's, and the panel landed to the left.
 - **Our own frame** (tried 2026-11-19): the badge opens a
   `PlasmaCore.Dialog` with `backgroundHints: NoBackground`, and the panel
   is drawn in QML. Without the theme's background KWin no longer blurs
