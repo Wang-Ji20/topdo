@@ -255,7 +255,7 @@ FocusScope {
                     if (panel.todoAddingSubtask) {
                         return "↵  add subtask     esc  cancel";
                     }
-                    return "↵  tick / add     ⌃↵  add     ⇧↵  subtask     ⌃E  edit     ⇧⌦  remove     ⌃H  done     ⇥  next column     esc  back";
+                    return "↵  tick / add     ⌃↵  add     ⇧↵  subtask     ⌃E  edit     ⇧⌦  remove     ⌃Z  undo remove     ⌃H  done     ⇥  next column     esc  back";
                 }
                 color: theme.dim
                 font.family: theme.mono

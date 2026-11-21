@@ -257,6 +257,27 @@ class TestEdits : public QObject {
         });
     }
 
+    // Removing a todo and restoring its block gives back the file as it was.
+    void restoreUndoesRemove() {
+        forRandomTodos([](const Document &document,
+                          const TodoList &,
+                          qsizetype todo,
+                          QRandomGenerator &,
+                          const QString &where) {
+            const topdo::Block block = topdo::todoBlock(document, todo);
+            const Document removed = topdo::removeTodo(document, todo);
+            QVERIFY2(topdo::restoreBlock(removed, block) == document, qPrintable(where));
+        });
+    }
+
+    void restoresAtTheEndOfAShorterFile() {
+        const topdo::Block block{.line = 5, .lines = {"- [ ] a", "  b"}};
+
+        const Document restored = topdo::restoreBlock({.lines = {"x"}}, block);
+
+        QCOMPARE(restored.lines, (QStringList{"x", "- [ ] a", "  b"}));
+    }
+
     // Adding a subtask inserts one line, which reads back as an open subtask of that todo.
     void addSubtaskInsertsOneSubtask() {
         forRandomTodos([](const Document &document,

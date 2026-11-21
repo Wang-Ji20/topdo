@@ -44,6 +44,7 @@ Edits are plain functions from a `Document` to the edited copy:
 | `setDone(document, todo, done)` | the character between the brackets |
 | `setText(document, todo, text)` | the text after the checkbox |
 | `removeTodo(document, todo)` | deletes the todo's line and the indented lines below it |
+| `restoreBlock(document, block)` | puts back lines that `todoBlock(document, todo)` named before a removal |
 | `addTodo(document, text, section)` | inserts `- [ ] text` after the first run of todos |
 | `addSubtask(document, todo, text)` | inserts `- [ ] text` as the todo's last subtask, indented like its siblings |
 

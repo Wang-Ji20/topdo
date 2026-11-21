@@ -153,8 +153,32 @@ void TodoModel::setText(int number, const QString &text) {
 }
 
 void TodoModel::remove(int number) {
-    editTodo(number,
-             [](const Document &document, qsizetype todo) { return removeTodo(document, todo); });
+    std::optional<Block> block;
+    const bool saved = editTodo(number, [&block](const Document &document, qsizetype todo) {
+        block = todoBlock(document, todo);
+        return removeTodo(document, todo);
+    });
+    if (!saved || !block) {
+        return;
+    }
+    m_removed.append(*block);
+    Q_EMIT canUndoRemoveChanged();
+}
+
+// The block goes back at its old line. If the file changed above it since, that line may now be
+// elsewhere in the list; no line is lost either way.
+void TodoModel::undoRemove() {
+    if (m_removed.isEmpty()) {
+        return;
+    }
+    const Block block = m_removed.constLast();
+    const bool saved =
+        edit([&block](const Document &document) { return restoreBlock(document, block); });
+    if (!saved) {
+        return; // keep it, to try again
+    }
+    m_removed.removeLast();
+    Q_EMIT canUndoRemoveChanged();
 }
 
 void TodoModel::reload() {
@@ -169,21 +193,23 @@ void TodoModel::reload() {
 }
 
 // Applies an edit through the store, which starts from the file on disk.
-void TodoModel::edit(const std::function<Document(const Document &)> &change) {
+// Returns whether the edit reached the file.
+bool TodoModel::edit(const std::function<Document(const Document &)> &change) {
     const std::expected<Document, QString> edited = update(m_path, change);
     if (!edited) {
         setError(edited.error());
-        return;
+        return false;
     }
     setError({});
     show(*edited);
+    return true;
 }
 
 // Edits one todo. A number that no longer names a todo, because the file changed since the panel
 // last showed it, changes nothing.
-void TodoModel::editTodo(int number,
+bool TodoModel::editTodo(int number,
                          const std::function<Document(const Document &, qsizetype)> &change) {
-    edit([number, &change](const Document &document) {
+    return edit([number, &change](const Document &document) {
         const TodoList list = findTodos(document);
         const qsizetype todo = number - 1;
         if (todo < 0 || todo >= list.todos.size()) {

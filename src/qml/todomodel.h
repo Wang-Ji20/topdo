@@ -1,6 +1,7 @@
 #pragma once
 
 #include "document.h"
+#include "edits.h"
 #include "todos.h"
 
 #include <QAbstractListModel>
@@ -31,6 +32,8 @@ class TodoModel : public QAbstractListModel {
     Q_PROPERTY(
         QString nextTitle READ nextTitle NOTIFY todosChanged) // the badge's todo; see nextTodo()
     Q_PROPERTY(QDate nextDue READ nextDue NOTIFY todosChanged)
+    // Whether undoRemove() has a removal to undo.
+    Q_PROPERTY(bool canUndoRemove READ canUndoRemove NOTIFY canUndoRemoveChanged)
     // The last failure to read or write the file, or empty.
     Q_PROPERTY(QString error READ error NOTIFY errorChanged)
 
@@ -65,12 +68,15 @@ class TodoModel : public QAbstractListModel {
     [[nodiscard]] QString nextTitle() const;
     [[nodiscard]] QDate nextDue() const;
     [[nodiscard]] QString error() const { return m_error; }
+    [[nodiscard]] bool canUndoRemove() const { return !m_removed.isEmpty(); }
 
     Q_INVOKABLE void add(const QString &text);
     Q_INVOKABLE void addSubtask(int number, const QString &text);
     Q_INVOKABLE void setDone(int number, bool done);
     Q_INVOKABLE void setText(int number, const QString &text);
     Q_INVOKABLE void remove(int number);
+    // Puts the last removed todo back, with its subtasks and notes.
+    Q_INVOKABLE void undoRemove();
 
   Q_SIGNALS:
     void pathChanged();
@@ -78,11 +84,12 @@ class TodoModel : public QAbstractListModel {
     void showDoneChanged();
     void todosChanged();
     void errorChanged();
+    void canUndoRemoveChanged();
 
   private:
     void reload();
-    void edit(const std::function<Document(const Document &)> &change);
-    void editTodo(int number, const std::function<Document(const Document &, qsizetype)> &change);
+    bool edit(const std::function<Document(const Document &)> &change);
+    bool editTodo(int number, const std::function<Document(const Document &, qsizetype)> &change);
     void show(const Document &document);
     void refilter();
     void watch();
@@ -96,6 +103,9 @@ class TodoModel : public QAbstractListModel {
     TodoList m_list;
     QList<qsizetype> m_rows; // indexes into m_list.todos, one per row
     QFileSystemWatcher m_watcher;
+    // What remove() took out, the latest last. Kept while the model lives: for the widget, as
+    // long as Plasma runs.
+    QList<Block> m_removed;
 };
 
 } // namespace topdo

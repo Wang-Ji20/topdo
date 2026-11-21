@@ -3,6 +3,7 @@
 #include "document.h"
 
 #include <QString>
+#include <QStringList>
 
 #include <optional>
 
@@ -20,6 +21,19 @@ Document setText(const Document &document, qsizetype todo, const QString &text);
 
 // Removes a todo with its subtasks and notes: the lines indented more than it below it.
 Document removeTodo(const Document &document, qsizetype todo);
+
+// The lines removeTodo() removes, and where they were, so that they can be put back.
+struct Block {
+    qsizetype line = 0;
+    QStringList lines;
+
+    friend bool operator==(const Block &, const Block &) = default;
+};
+
+Block todoBlock(const Document &document, qsizetype todo);
+
+// Puts removed lines back at their old line, or at the end if the file is now shorter.
+Document restoreBlock(const Document &document, const Block &block);
 
 // Adds "- [ ] text" after the first run of todos of the section, or of the file if no section is
 // given.

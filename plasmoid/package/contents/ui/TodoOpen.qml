@@ -208,6 +208,10 @@ FocusScope {
                             // For keyboards without Delete. With text typed, it deletes a character:
                             // Shift is often still down from typing a capital.
                             column.remove();
+                        } else if (ctrl && event.key === Qt.Key_Z) {
+                            // Undoes a removal, not typing: the input holds a few words at most.
+                            column.todos.undoRemove();
+                            column.move(0);
                         } else if (ctrl && event.key === Qt.Key_H) {
                             column.todos.showDone = !column.todos.showDone;
                         } else if (event.key === Qt.Key_Escape && input.text !== "") {

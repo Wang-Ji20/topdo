@@ -151,6 +151,14 @@ Item {
             verify(file().includes("Write report"), file());
         }
 
+        function test_ctrlZUndoesARemoval() {
+            keyClick(Qt.Key_Down);
+            keyClick(Qt.Key_Down); // Plan trip
+            keyClick(Qt.Key_Delete, Qt.ShiftModifier);
+            keyClick(Qt.Key_Z, Qt.ControlModifier);
+            compare(file(), root.example);
+        }
+
         function test_ctrlHShowsDoneTodos() {
             compare(rows(), 5);
             keyClick(Qt.Key_H, Qt.ControlModifier);

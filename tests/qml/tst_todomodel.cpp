@@ -144,6 +144,24 @@ class TestTodoModel : public QObject {
         QCOMPARE(titles(model), (QStringList{"Pay the rent", "Write report", "Call the bank"}));
     }
 
+    // Undo puts removed todos back, the latest first, and a stale number leaves nothing to undo.
+    void undoesRemovals() {
+        Fixture fixture(exampleFile());
+        TodoModel &model = fixture.model;
+
+        model.remove(99);
+        QVERIFY(!model.canUndoRemove());
+        model.remove(3); // Plan trip, with its subtasks and note
+        model.remove(1); // Buy milk
+        QVERIFY(model.canUndoRemove());
+
+        model.undoRemove();
+        QVERIFY(readFile(fixture.path).startsWith("- [ ] Buy milk\n"));
+        model.undoRemove();
+        QCOMPARE(readFile(fixture.path), exampleFile());
+        QVERIFY(!model.canUndoRemove());
+    }
+
     void ignoresStaleNumbers() {
         Fixture fixture(exampleFile());
         const QSignalSpy changed(&fixture.model, &TodoModel::todosChanged);

@@ -89,6 +89,9 @@ overview, then closes the panel.
   `add "what you typed"`.
 - Numbers, the same as `topdo list`, appear only here.
 - The actions appear only on the highlighted row.
+- Undo covers removals only, from the panel, for as long as Plasma runs.
+  The lines go back at their old line number; if the file changed above
+  them since, they may land in another place, but no line is lost.
 - While it edits a todo or writes a new subtask, the input line doesn't
   filter, and Tab doesn't switch columns.
 
@@ -102,6 +105,7 @@ overview, then closes the panel.
 | Ctrl+E | edits the highlighted todo in the input line; Enter saves, Esc cancels |
 | Shift+Delete | removes the highlighted todo with its subtasks |
 | Shift+Backspace | the same, with an empty input; with text typed, deletes a character |
+| Ctrl+Z | puts the last removed todo back, with its subtasks and notes; again for the one before |
 | Ctrl+H | shows or hides done todos |
 | Tab, Shift+Tab | opens the next or previous column |
 | ← → | with an empty input, opens the previous or next column; otherwise moves the cursor |

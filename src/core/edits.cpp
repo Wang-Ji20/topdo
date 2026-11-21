@@ -104,11 +104,25 @@ Document setText(const Document &document, qsizetype todo, const QString &text) 
     return edited;
 }
 
-Document removeTodo(const Document &document, qsizetype todo) {
+Block todoBlock(const Document &document, qsizetype todo) {
     const qsizetype first = lineOf(document, todo);
     const qsizetype last = blockEnd(document.lines, first);
+    return {.line = first, .lines = document.lines.mid(first, last - first + 1)};
+}
+
+Document removeTodo(const Document &document, qsizetype todo) {
+    const Block block = todoBlock(document, todo);
     Document edited = document;
-    edited.lines.remove(first, last - first + 1);
+    edited.lines.remove(block.line, block.lines.size());
+    return edited;
+}
+
+Document restoreBlock(const Document &document, const Block &block) {
+    const qsizetype line = std::min(block.line, document.lines.size());
+    Document edited = document;
+    for (qsizetype i = 0; i < block.lines.size(); ++i) {
+        edited.lines.insert(line + i, block.lines.at(i));
+    }
     return edited;
 }
 
