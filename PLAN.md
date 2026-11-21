@@ -35,3 +35,8 @@ long term.
 - [x] The overview: three columns, project and today as stubs.
 - [x] The open todo column: input line, filtering, keys.
 - [x] Install and placement through the dotfiles (clone of `main` once it exists).
+- [x] The badge stays centred with a second screen left of the bar's.
+- [x] Subtasks: `core` edit, `topdo add --under`, Shift+Enter in the panel.
+- [x] Remove with Shift+Backspace too; Ctrl+Z puts removed todos back.
+- [x] New todo files start with a preamble; topdo skips HTML comments.
+- [ ] Check the badge centring and the new keys in the real top bar.

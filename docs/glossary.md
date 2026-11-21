@@ -3,6 +3,9 @@
 **Badge.** The small label topdo shows in the top bar, for example
 `● Write report · 3`. Clicking it opens the popup.
 
+**Comment.** Lines between `<!--` and `-->` in the todo file. topdo skips
+them, and Markdown viewers hide them.
+
 **CMake preset.** A named set of build settings in `CMakePresets.json`, used
 as `cmake --preset dev`.
 
@@ -30,6 +33,9 @@ the desktop. topdo's badge and popup are one plasmoid.
 
 **Popup.** The window that opens when you click the badge, with the todo
 list.
+
+**Preamble.** The comment a new todo file starts with. It shows how to
+write todos by example; you can delete it.
 
 **Property test.** A test that states a rule ("writing back an unchanged
 file gives the same bytes") and checks it on many random inputs.
