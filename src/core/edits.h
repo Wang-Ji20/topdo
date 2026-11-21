@@ -25,4 +25,8 @@ Document removeTodo(const Document &document, qsizetype todo);
 // given.
 Document addTodo(const Document &document, const QString &text, std::optional<qsizetype> section);
 
+// Adds "- [ ] text" as the last subtask of a todo: after its block, indented like its last
+// subtask, or two spaces more than the todo if it has none.
+Document addSubtask(const Document &document, qsizetype todo, const QString &text);
+
 } // namespace topdo

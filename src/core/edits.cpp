@@ -66,6 +66,25 @@ qsizetype insertionLine(const Document &document, std::optional<qsizetype> secti
     return document.lines.size();
 }
 
+// The spaces and tabs at the start of a line, as written.
+QString leadingWhitespace(const QString &line) {
+    qsizetype end = 0;
+    while (end < line.size() && (line.at(end) == u' ' || line.at(end) == u'\t')) {
+        ++end;
+    }
+    return line.left(end);
+}
+
+// The indentation for a new subtask of `todo`: its last subtask's, or two spaces more than its own.
+QString subtaskIndent(const QStringList &lines, const TodoList &list, qsizetype todo) {
+    const auto isChild = [todo](const Todo &other) { return other.parent == todo; };
+    const auto lastChild = std::ranges::find_last_if(list.todos, isChild).begin();
+    if (lastChild == list.todos.end()) {
+        return leadingWhitespace(lines.at(list.todos.at(todo).line)) + QStringLiteral("  ");
+    }
+    return leadingWhitespace(lines.at(lastChild->line));
+}
+
 } // namespace
 
 Document setDone(const Document &document, qsizetype todo, bool done) {
@@ -97,6 +116,15 @@ Document addTodo(const Document &document, const QString &text, std::optional<qs
     const qsizetype line = insertionLine(document, section);
     Document edited = document;
     edited.lines.insert(line, QStringLiteral("- [ ] ") + text);
+    return edited;
+}
+
+Document addSubtask(const Document &document, qsizetype todo, const QString &text) {
+    const TodoList list = findTodos(document);
+    const qsizetype line = blockEnd(document.lines, list.todos.at(todo).line) + 1;
+    const QString indent = subtaskIndent(document.lines, list, todo);
+    Document edited = document;
+    edited.lines.insert(line, indent + QStringLiteral("- [ ] ") + text);
     return edited;
 }
 

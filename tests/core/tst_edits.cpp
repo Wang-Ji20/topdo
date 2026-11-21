@@ -151,6 +151,38 @@ class TestEdits : public QObject {
         QCOMPARE(edited.lines, expected);
     }
 
+    void addsSubtasks_data() {
+        QTest::addColumn<QStringList>("lines");
+        QTest::addColumn<int>("todo");
+        QTest::addColumn<int>("expectedLine");
+        QTest::addColumn<QString>("expected");
+
+        QTest::newRow("after the notes, like the siblings")
+            << example() << 2 << 9 << "  - [ ] new"; // Plan trip
+        QTest::newRow("no subtasks: two spaces more") << example() << 0 << 1 << "  - [ ] new";
+        QTest::newRow("four-space siblings")
+            << QStringList{"- [ ] a", "    - [ ] b", "", "- [ ] c"} << 0 << 2 << "    - [ ] new";
+        QTest::newRow("under a subtask")
+            << QStringList{"- [ ] a", "\t- [ ] b", "- [ ] c"} << 1 << 2 << "\t  - [ ] new";
+        QTest::newRow("last direct subtask, not a deeper one")
+            << QStringList{"- [ ] a", "  - [ ] b", "      - [ ] c"} << 0 << 3 << "  - [ ] new";
+        QTest::newRow("at the end of the file")
+            << QStringList{"- [ ] a"} << 0 << 1 << "  - [ ] new";
+    }
+
+    void addsSubtasks() {
+        QFETCH(QStringList, lines);
+        QFETCH(int, todo);
+        QFETCH(int, expectedLine);
+        QFETCH(QString, expected);
+
+        const Document edited = topdo::addSubtask({.lines = lines}, todo, "new");
+
+        QStringList expectedLines = lines;
+        expectedLines.insert(expectedLine, expected);
+        QCOMPARE(edited.lines, expectedLines);
+    }
+
     // Ticking changes at most one character, and only that todo's done state.
     void setDoneTouchesOneCharacter() {
         forRandomTodos([](const Document &document,
@@ -219,6 +251,28 @@ class TestEdits : public QObject {
             QVERIFY2(added != after.todos.end(), qPrintable(where));
             QVERIFY2(added->parent == -1 && !added->done && added->section == section,
                      qPrintable(where));
+            QStringList withoutIt = edited.lines;
+            withoutIt.remove(added->line);
+            QVERIFY2(withoutIt == document.lines, qPrintable(where));
+        });
+    }
+
+    // Adding a subtask inserts one line, which reads back as an open subtask of that todo.
+    void addSubtaskInsertsOneSubtask() {
+        forRandomTodos([](const Document &document,
+                          const TodoList &list,
+                          qsizetype todo,
+                          QRandomGenerator &,
+                          const QString &where) {
+            const Document edited = topdo::addSubtask(document, todo, "new text");
+            const TodoList after = topdo::findTodos(edited);
+            QVERIFY2(after.todos.size() == list.todos.size() + 1, qPrintable(where));
+            const auto added = std::ranges::find(after.todos, QString("new text"), &Todo::text);
+            QVERIFY2(added != after.todos.end(), qPrintable(where));
+            const qsizetype parentLine = list.todos.at(todo).line;
+            QVERIFY2(added->parent >= 0 && after.todos.at(added->parent).line == parentLine,
+                     qPrintable(where));
+            QVERIFY2(!added->done, qPrintable(where));
             QStringList withoutIt = edited.lines;
             withoutIt.remove(added->line);
             QVERIFY2(withoutIt == document.lines, qPrintable(where));

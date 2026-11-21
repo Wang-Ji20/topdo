@@ -97,7 +97,10 @@ tell what topdo sees by looking at each line.
      top of the file for the unnamed section);
    - with no section given: after the last line of the first run of todos
      in the file;
-   - into a file with no todos: at the end of the file.
+   - into a file with no todos: at the end of the file;
+   - as a subtask of a todo: after the last line of that todo's block (the
+     todo and the lines indented more than it below it), indented like the
+     todo's last subtask, or two spaces more than the todo if it has none.
 
    A run of todos is a todo, its indented lines, and the todos that follow
    directly, with no blank or other line between them.
@@ -130,6 +133,7 @@ tell what topdo sees by looking at each line.
 |---|---|
 | Read all bullet markers and `[X]`; write `- [ ]` and `[x]` | Only `- [ ]`: todos written with `*` would silently disappear |
 | New todos at the end of the first run of todos | At the end of the file: they can land below unrelated notes |
+| A new subtask copies its siblings' indentation | A fixed indentation: a file indented with four spaces would mix in two |
 | Nested todos are subtasks | A flat list: loses the structure the user wrote |
 | Simple line rules | Follow CommonMark exactly (lazy lines, list item content columns): hundreds of lines of rules nobody can predict by looking at the file |
 | Headings are sections | One flat list: no place to keep work and home todos apart |
