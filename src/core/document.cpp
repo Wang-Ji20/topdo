@@ -4,28 +4,39 @@
 
 namespace topdo {
 
-Document newTodoFile() {
-    return {
-        .lines =
-            {
-                "<!--",
-                "This is your topdo list, a plain Markdown file. Edit it by hand whenever you",
-                "like: the topdo widget and the `topdo` command read and change this same file.",
-                "topdo skips this comment; delete it once you know the rules.",
-                "",
-                "- [ ] An open todo: a dash, a space, then [ ] and the text",
-                "- [x] A done todo: [x] in the brackets",
-                "  - [ ] A subtask: a todo indented under another one",
-                "- [ ] A todo with a due date due:2026-12-31",
-                "",
-                "## A heading starts a section",
-                "",
-                "Any other line is a note: topdo keeps it exactly as written.",
-                "All the rules: https://github.com/Wang-Ji20/topdo/blob/main/docs/design/format.md",
-                "-->",
-                "",
-            },
-    };
+QString manualText() {
+    return QStringLiteral(R"(# Your todo list
+
+`todo.txt` in this folder is your todo list. It is a plain
+[todo.txt](https://github.com/todotxt/todo.txt) file: edit it by hand
+whenever you like. The topdo widget, the `topdo` command and any other
+todo.txt app read and change the same file.
+
+One line is one todo:
+
+```
+(A) Call the bank @phone due:2026-12-01
+Buy milk
+Plan trip +Holiday id:1
+x 2026-11-20 Book flight +Holiday p:1
+Book hotel +Holiday p:1
+```
+
+| You write | It means |
+|---|---|
+| `x 2026-11-20 ` at the start | done, on that date |
+| `(A) ` at the start | priority A, the highest; up to `(Z) ` |
+| `2026-11-18 ` at the start, after any priority | the day you wrote it |
+| `+Holiday` | the project; topdo groups todos by their first one |
+| `@phone` | a context: where or how you do it |
+| `due:2026-12-01` | the due date |
+| `id:1`, `p:1` | a todo with `p:1` is a subtask of the one with `id:1` |
+
+Blank lines are kept but aren't todos. Done todos stay in the file until
+you delete them.
+
+All the rules: https://github.com/Wang-Ji20/topdo/blob/main/docs/design/format.md
+)");
 }
 
 Document parse(const QByteArray &bytes) {

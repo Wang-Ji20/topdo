@@ -37,9 +37,9 @@ class TestQuery : public QObject {
         QFETCH(bool, showDone);
         QFETCH(QList<qsizetype>, shown);
         const TodoList list = todosIn({
-            "- [ ] Call the bank due:2026-11-21",
-            "- [x] Renew passport",
-            "- [ ] Buy milk",
+            "Call the bank due:2026-11-21",
+            "x Renew passport",
+            "Buy milk",
         });
 
         QCOMPARE(topdo::filterTodos(list, filter, showDone), shown);
@@ -49,17 +49,17 @@ class TestQuery : public QObject {
         QTest::addColumn<QStringList>("lines");
         QTest::addColumn<int>("next"); // -1: none
 
-        QTest::newRow("first open") << QStringList{"- [x] a", "- [ ] b", "- [ ] c"} << 1;
+        QTest::newRow("first open") << QStringList{"x a", "b", "c"} << 1;
         QTest::newRow("due today beats first")
-            << QStringList{"- [ ] a", "- [ ] b due:2026-11-19"} << 1;
+            << QStringList{"a", "b due:2026-11-19"} << 1;
         QTest::newRow("late beats due today")
-            << QStringList{"- [ ] a due:2026-11-19", "- [ ] b due:2026-11-18"} << 1;
+            << QStringList{"a due:2026-11-19", "b due:2026-11-18"} << 1;
         QTest::newRow("due later doesn't count")
-            << QStringList{"- [ ] a", "- [ ] b due:2026-11-20"} << 0;
+            << QStringList{"a", "b due:2026-11-20"} << 0;
         QTest::newRow("done doesn't count")
-            << QStringList{"- [ ] a", "- [x] b due:2026-11-01"} << 0;
-        QTest::newRow("subtasks count") << QStringList{"- [ ] a", "  - [ ] b due:2026-11-18"} << 1;
-        QTest::newRow("nothing open") << QStringList{"- [x] a"} << -1;
+            << QStringList{"a", "x b due:2026-11-01"} << 0;
+        QTest::newRow("subtasks count") << QStringList{"a id:1", "b due:2026-11-18 p:1"} << 1;
+        QTest::newRow("nothing open") << QStringList{"x a"} << -1;
     }
 
     void picksTheNextTodo() {
@@ -71,8 +71,14 @@ class TestQuery : public QObject {
         QCOMPARE(picked.value_or(-1), static_cast<qsizetype>(next));
     }
 
+    void sortsBySection() {
+        const TodoList list = todosIn({"a +Work", "b", "c +Home", "d +Work", "e"});
+
+        QCOMPARE(topdo::filterTodos(list, {}, false), (QList<qsizetype>{1, 4, 0, 3, 2}));
+    }
+
     void countsDepth() {
-        const TodoList list = todosIn({"- [ ] a", "  - [ ] b", "    - [ ] c", "- [ ] d"});
+        const TodoList list = todosIn({"a id:1", "b id:2 p:1", "c p:2", "d"});
 
         QCOMPARE(topdo::depthOf(list, 0), 0);
         QCOMPARE(topdo::depthOf(list, 1), 1);

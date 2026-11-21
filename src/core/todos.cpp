@@ -1,100 +1,114 @@
 #include "todos.h"
 #include "todoline.h"
 
-#include <QRegularExpression>
+#include <QHash>
+
+using namespace Qt::StringLiterals;
 
 namespace topdo {
 
 namespace {
 
-struct DueDate {
-    QString title;
-    std::optional<QDate> due;
-};
-
-// Splits off the first valid due:YYYY-MM-DD word.
-DueDate splitDueDate(const QString &text) {
-    static const QRegularExpression dueWord(
-        QStringLiteral(R"((?:^|\s)due:(\d{4}-\d{2}-\d{2})(?=\s|$))"));
-    QRegularExpressionMatchIterator matches = dueWord.globalMatch(text);
-    while (matches.hasNext()) {
-        const QRegularExpressionMatch match = matches.next();
-        const QDate date = QDate::fromString(match.captured(1), Qt::ISODate);
-        if (!date.isValid()) {
+// The first valid due:YYYY-MM-DD tag; rule 5.
+std::optional<QDate> dueDate(const QString &text) {
+    for (const QString &word : wordsOf(text)) {
+        if (!word.startsWith(u"due:")) {
             continue;
         }
-        QString title = text;
-        title.remove(match.capturedStart(), match.capturedLength());
-        return {.title = title.simplified(), .due = date};
+        const QDate date = QDate::fromString(word.sliced(4), Qt::ISODate);
+        if (date.isValid() && word.size() == 14) {
+            return date;
+        }
     }
-    return {.title = text.simplified(), .due = std::nullopt};
+    return std::nullopt;
 }
 
-// A todo that later, more indented todos can be subtasks of.
-struct Ancestor {
-    int indent = 0;
-    qsizetype todo = 0;
-};
-
-// The parent of a todo at this indentation: the nearest ancestor with less indentation.
-// Ancestors that are indented as much or more can't hold later todos, so they are dropped.
-qsizetype popToParent(QList<Ancestor> &ancestors, int indent) {
-    while (!ancestors.isEmpty() && ancestors.last().indent >= indent) {
-        ancestors.removeLast();
+// Whether a word is one of the tags that the title leaves out; rule 8.
+bool isHiddenTag(const QString &word) {
+    for (const QLatin1StringView key : {"id:"_L1, "p:"_L1, "pri:"_L1}) {
+        if (word.startsWith(key) && word.size() > key.size()) {
+            return true;
+        }
     }
-    return ancestors.isEmpty() ? -1 : ancestors.last().todo;
+    const bool due = word.startsWith(u"due:");
+    return due && dueDate(word).has_value();
+}
+
+std::optional<QString> firstProject(const QString &text) {
+    for (const QString &word : wordsOf(text)) {
+        if (word.startsWith(u'+') && word.size() > 1) {
+            return word.sliced(1);
+        }
+    }
+    return std::nullopt;
+}
+
+qsizetype sectionOf(QList<Section> &sections, const std::optional<QString> &project) {
+    if (!project) {
+        return 0;
+    }
+    for (qsizetype i = 1; i < sections.size(); ++i) {
+        if (sections.at(i).title == *project) {
+            return i;
+        }
+    }
+    sections.append({.title = *project});
+    return sections.size() - 1;
+}
+
+// Whether following parents from `todo` comes back to it; rule 6.
+bool onCircle(const QList<qsizetype> &parents, qsizetype todo) {
+    qsizetype at = parents.at(todo);
+    for (qsizetype steps = 0; at >= 0 && steps < parents.size(); ++steps) {
+        if (at == todo) {
+            return true;
+        }
+        at = parents.at(at);
+    }
+    return false;
+}
+
+// Links each todo to the first todo whose id its p: tag names.
+void linkSubtasks(QList<Todo> &todos, const QStringList &parentIds) {
+    QHash<QString, qsizetype> byId;
+    for (qsizetype i = 0; i < todos.size(); ++i) {
+        if (!todos.at(i).id.isEmpty() && !byId.contains(todos.at(i).id)) {
+            byId.insert(todos.at(i).id, i);
+        }
+    }
+    QList<qsizetype> parents(todos.size(), -1);
+    for (qsizetype i = 0; i < todos.size(); ++i) {
+        parents[i] = parentIds.at(i).isEmpty() ? -1 : byId.value(parentIds.at(i), -1);
+    }
+    for (qsizetype i = 0; i < todos.size(); ++i) {
+        todos[i].parent = onCircle(parents, i) ? -1 : parents.at(i);
+    }
 }
 
 } // namespace
 
 TodoList findTodos(const Document &document) {
     TodoList list{.sections = {Section{}}, .todos = {}};
-    QList<Ancestor> ancestors;
-    bool inFence = false;
-    bool inComment = false;
+    QStringList parentIds;
     for (qsizetype i = 0; i < document.lines.size(); ++i) {
         const QString &line = document.lines.at(i);
-        if (inComment) {
-            inComment = !closesComment(line);
+        if (isBlank(line)) {
             continue;
         }
-        if (!inFence && opensComment(line)) {
-            inComment = true;
-            popToParent(ancestors, indentation(line)); // like a note
-            continue;
-        }
-        if (isFence(line)) {
-            inFence = !inFence;
-            popToParent(ancestors, indentation(line));
-            continue;
-        }
-        if (inFence) {
-            continue;
-        }
-        if (const std::optional<QString> title = headingTitle(line)) {
-            list.sections.append({.title = *title, .line = i});
-            ancestors.clear();
-            continue;
-        }
-        const std::optional<TodoLine> match = matchTodoLine(line);
-        if (!match) {
-            if (!isBlank(line)) {
-                popToParent(ancestors, indentation(line)); // a note ends nesting at its depth
-            }
-            continue;
-        }
-        const DueDate split = splitDueDate(match->text);
+        const TodoLine parts = splitTodoLine(line);
         list.todos.append({
             .line = i,
-            .parent = popToParent(ancestors, match->indent),
-            .section = list.sections.size() - 1,
-            .done = match->done,
-            .text = match->text,
-            .title = split.title,
-            .due = split.due,
+            .parent = -1,
+            .section = sectionOf(list.sections, firstProject(parts.text)),
+            .done = parts.done,
+            .text = parts.text,
+            .title = withoutWords(parts.text, isHiddenTag),
+            .id = tagValue(parts.text, QStringLiteral("id")).value_or(QString()),
+            .due = dueDate(parts.text),
         });
-        ancestors.append({.indent = match->indent, .todo = list.todos.size() - 1});
+        parentIds.append(tagValue(parts.text, QStringLiteral("p")).value_or(QString()));
     }
+    linkSubtasks(list.todos, parentIds);
     return list;
 }
 

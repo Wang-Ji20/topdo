@@ -16,54 +16,49 @@ QByteArray randomText(QRandomGenerator &random) {
         "Write",
         "report",
         "call",
-        "the",
-        "bank",
-        "Ünïcödé",
-        "中文",
+        "+Work",
+        "+Home",
+        "@phone",
         "due:2026-11-21",
         "due:2026-13-40",
-        "[ ]",
-        "`code`",
-        "*stars*",
+        "id:1",
+        "id:2",
+        "p:1",
+        "p:2",
+        "p:3",
+        "pri:A",
+        "pri:",
+        "Ünïcödé",
+        "中文",
+        "x",
+        "(A)",
+        "2026-11-20",
+        "a:b:c",
         "\t",
+        "https://x.y",
     };
     const int count = random.bounded(6);
     QByteArrayList chosen;
     for (int i = 0; i < count; ++i) {
         chosen.append(pick(random, words));
     }
-    return chosen.join(' ');
+    return chosen.join(pick(random, {" ", " ", "  "}));
 }
 
 QByteArray randomTodo(QRandomGenerator &random) {
-    const QByteArray indent = pick(random, {"", "", "  ", "    ", "\t", "   "});
-    const QByteArray marker = pick(random, {"-", "-", "*", "+", "1.", "2)"});
-    const QByteArray checkbox = pick(random, {"[ ]", "[ ]", "[x]", "[X]", "[]", "[y]", "[  ]"});
-    const QByteArray separator = pick(random, {" ", " ", "", "  ", "\t"});
+    const QByteArray done = pick(random, {"", "", "x ", "x ", "X ", "x"});
+    const QByteArray priority = pick(random, {"", "", "(A) ", "(Z) ", "(b) ", "(A)"});
+    const QByteArray completed = pick(random, {"", "2026-11-20 ", "2026-1-2 "});
+    const QByteArray created = pick(random, {"", "", "2026-11-18 "});
     const QByteArray text = randomText(random);
-    return indent + marker + separator + checkbox + " " + text;
-}
-
-QByteArray randomHeading(QRandomGenerator &random) {
-    const QByteArray hashes(random.bounded(1, 8), '#');
-    const QByteArray text = randomText(random);
-    return hashes + pick(random, {" ", "", "  "}) + text;
+    return done + priority + completed + created + text;
 }
 
 QByteArray randomLine(QRandomGenerator &random) {
-    switch (random.bounded(6)) {
-    case 0:
-    case 1:
-        return randomTodo(random);
-    case 2:
-        return randomHeading(random);
-    case 3:
-        return pick(random, {"```", "~~~", "```md", "    code", "<!--", "-->", "<!-- note -->"});
-    case 4:
-        return pick(random, {"", "", "   "});
-    default:
-        return randomText(random);
+    if (random.bounded(5) == 0) {
+        return pick(random, {"", "", "   ", "\t"});
     }
+    return randomTodo(random);
 }
 
 } // namespace

@@ -12,9 +12,9 @@ namespace topdo {
 
 // What the panel and the badge show of a todo list; see docs/design/widget.md.
 
-// The todos the panel lists, as indexes into list.todos, in file order. With a filter, the todos
-// whose title contains it (ignoring case), done or not; without one, the open todos, and the done
-// ones too if showDone is set.
+// The todos the panel lists, as indexes into list.todos: by section, then in file order. With a
+// filter, the todos whose title contains it (ignoring case), done or not; without one, the open
+// todos, and the done ones too if showDone is set.
 QList<qsizetype> filterTodos(const TodoList &list, const QString &filter, bool showDone);
 
 // The todo the badge shows: the open todo with the earliest due date on or before today (late

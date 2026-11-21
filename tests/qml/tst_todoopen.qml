@@ -9,9 +9,9 @@ import topdo.test
 Item {
     id: root
 
-    // The example in docs/design/format.md. Open todos: 1 Buy milk, 2 Write report, 3 Plan trip,
-    // 5 Book hotel, 6 Call the bank; done: 4 Book flight, 7 Renew passport.
-    readonly property string example: "- [ ] Buy milk\n\n## Work\n\n- [ ] Write report due:2026-11-21\n- [ ] Plan trip\n  - [x] Book flight\n  - [ ] Book hotel\n  Ask about late check-in.\n\n## Home\n\n* [ ] Call the bank\n- [x] Renew passport\n"
+    // The example in docs/design/format.md. Rows, by project: 1 Call the bank, 2 Buy milk,
+    // 3 Plan trip, 5 Book hotel, 6 Write report; done: 4 Book flight, 7 Renew passport.
+    readonly property string example: "(A) Call the bank @phone due:2026-11-21\nBuy milk\nPlan trip +Holiday id:1\nx 2026-11-20 Book flight +Holiday p:1\nBook hotel +Holiday p:1\n2026-11-18 Write report +Work\nx 2026-11-19 Renew passport pri:B\n"
     property string path
 
     width: 1400
@@ -20,7 +20,7 @@ Item {
     TodoModel {
         id: todoModel
 
-        path: "/nonexistent/topdo-test/todo.md"
+        path: "/nonexistent/topdo-test/todo.txt"
     }
 
     Panel {
@@ -66,16 +66,16 @@ Item {
         }
 
         function test_enterTicksTheHighlightedTodo() {
-            keyClick(Qt.Key_Down);
+            keyClick(Qt.Key_Down); // Buy milk
             keyClick(Qt.Key_Return);
-            verify(file().includes("- [x] Write report"), file());
+            verify(/\nx \d{4}-\d{2}-\d{2} Buy milk\n/.test(file()), file());
         }
 
         function test_enterOnTheAddRowAdds() {
             type("Pay rent");
             compare(rows(), 0);
             keyClick(Qt.Key_Return);
-            verify(file().startsWith("- [ ] Buy milk\n- [ ] Pay rent\n"), file());
+            compare(file(), root.example + "Pay rent\n");
             compare(todoModel.filter, "", "the input is cleared");
         }
 
@@ -83,11 +83,11 @@ Item {
             type("Buy");
             compare(rows(), 1);
             keyClick(Qt.Key_Return, Qt.ControlModifier);
-            verify(file().startsWith("- [ ] Buy milk\n- [ ] Buy\n"), file());
-            verify(!file().includes("- [x] Buy milk"), "nothing was ticked");
+            compare(file(), root.example + "Buy\n", "added, and nothing was ticked");
         }
 
         function test_ctrlEEditsAndEnterSaves() {
+            keyClick(Qt.Key_Down); // Buy milk
             keyClick(Qt.Key_E, Qt.ControlModifier);
             compare(panel.todoEditing, true);
             for (let i = 0; i < 4; ++i) {
@@ -96,7 +96,7 @@ Item {
             type("eggs");
             keyClick(Qt.Key_Return);
             compare(panel.todoEditing, false);
-            verify(file().startsWith("- [ ] Buy eggs\n"), file());
+            verify(file().includes("\nBuy eggs\n"), file());
         }
 
         function test_escapeCancelsAnEdit() {
@@ -122,7 +122,7 @@ Item {
             compare(panel.openColumn, 0, "no switching columns in the middle of a new subtask");
             keyClick(Qt.Key_Return);
             compare(panel.todoAddingSubtask, false);
-            verify(file().includes("  Ask about late check-in.\n  - [ ] Pack\n"), file());
+            verify(file().includes("Book hotel +Holiday p:1\nPack p:1\n"), file());
         }
 
         function test_escapeCancelsASubtask() {
@@ -139,12 +139,12 @@ Item {
             keyClick(Qt.Key_Delete, Qt.ShiftModifier);
             verify(!file().includes("Plan trip"), file());
             verify(!file().includes("Book hotel"), file());
-            verify(file().includes("- [ ] Write report"), file());
+            verify(file().includes("Write report"), file());
         }
 
         function test_shiftBackspaceRemovesOnlyWithAnEmptyInput() {
-            keyClick(Qt.Key_Backspace, Qt.ShiftModifier); // Buy milk
-            verify(!file().includes("Buy milk"), file());
+            keyClick(Qt.Key_Backspace, Qt.ShiftModifier); // Call the bank
+            verify(!file().includes("Call the bank"), file());
             type("Wr");
             keyClick(Qt.Key_Backspace, Qt.ShiftModifier);
             compare(todoModel.filter, "W", "with text, it deletes a character");

@@ -6,61 +6,91 @@ namespace topdo {
 
 namespace {
 
-constexpr int TabWidth = 4;
+// A date word followed by a space, at `from`. Its value isn't checked: the spec places dates by
+// position, and an odd one stays as written.
+std::optional<QString> dateAt(const QString &line, qsizetype from) {
+    static const QRegularExpression date(QStringLiteral(R"(\d{4}-\d{2}-\d{2} )"));
+    const QRegularExpressionMatch match = date.match(
+        line, from, QRegularExpression::NormalMatch, QRegularExpression::AnchorAtOffsetMatchOption);
+    if (!match.hasMatch()) {
+        return std::nullopt;
+    }
+    return match.captured(0).chopped(1);
+}
+
+std::optional<QChar> priorityAt(const QString &line) {
+    static const QRegularExpression priority(QStringLiteral(R"(^\(([A-Z])\) )"));
+    const QRegularExpressionMatch match = priority.match(line);
+    if (!match.hasMatch()) {
+        return std::nullopt;
+    }
+    return match.captured(1).at(0);
+}
+
+// Reads an optional date at `at` and moves `at` past it.
+std::optional<QString> takeDate(const QString &line, qsizetype &at) {
+    std::optional<QString> date = dateAt(line, at);
+    if (date) {
+        at += date->size() + 1;
+    }
+    return date;
+}
 
 } // namespace
 
-int indentation(const QString &line) {
-    int columns = 0;
-    for (const QChar ch : line) {
-        if (ch == u' ') {
-            columns += 1;
-        } else if (ch == u'\t') {
-            columns += TabWidth;
-        } else {
-            break;
-        }
-    }
-    return columns;
-}
-
 bool isBlank(const QString &line) { return line.trimmed().isEmpty(); }
 
-bool isFence(const QString &line) {
-    const QString trimmed = line.trimmed();
-    return trimmed.startsWith(u"```") || trimmed.startsWith(u"~~~");
-}
-
-bool opensComment(const QString &line) {
-    const QString trimmed = line.trimmed();
-    return trimmed.startsWith(u"<!--") && !trimmed.sliced(4).contains(u"-->");
-}
-
-bool closesComment(const QString &line) { return line.contains(u"-->"); }
-
-std::optional<QString> headingTitle(const QString &line) {
-    static const QRegularExpression heading(QStringLiteral("^#{1,6} (.*)$"));
-    const QRegularExpressionMatch match = heading.match(line);
-    if (!match.hasMatch()) {
-        return std::nullopt;
+TodoLine splitTodoLine(const QString &line) {
+    TodoLine todo;
+    qsizetype at = 0;
+    if (line.startsWith(u"x ")) {
+        todo.done = true;
+        at = 2;
+        todo.completed = takeDate(line, at);
+    } else {
+        todo.priority = priorityAt(line);
+        at = todo.priority ? 4 : 0;
     }
-    return match.captured(1).trimmed();
+    todo.created = takeDate(line, at);
+    todo.text = line.sliced(at);
+    return todo;
 }
 
-std::optional<TodoLine> matchTodoLine(const QString &line) {
-    static const QRegularExpression todo(
-        QStringLiteral(R"(^[ \t]*[-*+][ \t]+\[([ xX])\][ \t]+(.*)$)"));
-    const QRegularExpressionMatch match = todo.match(line);
-    if (!match.hasMatch()) {
-        return std::nullopt;
+QString joinTodoLine(const TodoLine &todo) {
+    QString line;
+    if (todo.done) {
+        line += u"x ";
     }
-    return TodoLine{
-        .indent = indentation(line),
-        .markColumn = match.capturedStart(1),
-        .textColumn = match.capturedStart(2),
-        .done = match.captured(1) != u" ",
-        .text = match.captured(2),
-    };
+    if (todo.priority) {
+        line += u'(' + *todo.priority + u") ";
+    }
+    for (const std::optional<QString> &date : {todo.completed, todo.created}) {
+        if (date) {
+            line += *date + u' ';
+        }
+    }
+    return line + todo.text;
+}
+
+QStringList wordsOf(const QString &text) {
+    static const QRegularExpression space(QStringLiteral("[ \t]+"));
+    return text.split(space, Qt::SkipEmptyParts);
+}
+
+std::optional<QString> tagValue(const QString &text, const QString &key) {
+    const QString prefix = key + u':';
+    for (const QString &word : wordsOf(text)) {
+        if (word.startsWith(prefix) && word.size() > prefix.size()) {
+            return word.sliced(prefix.size());
+        }
+    }
+    return std::nullopt;
+}
+
+QString withoutWords(const QString &text, const std::function<bool(const QString &)> &drop) {
+    QStringList kept = wordsOf(text);
+    kept.removeIf(drop);
+    return kept.join(u' ');
 }
 
 } // namespace topdo

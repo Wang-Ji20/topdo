@@ -14,6 +14,7 @@ QList<qsizetype> filterTodos(const TodoList &list, const QString &filter, bool s
             shown.append(i);
         }
     }
+    std::ranges::stable_sort(shown, {}, [&list](qsizetype i) { return list.todos.at(i).section; });
     return shown;
 }
 

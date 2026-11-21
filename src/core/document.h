@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QByteArray>
+#include <QString>
 #include <QStringList>
 
 namespace topdo {
@@ -12,9 +13,9 @@ struct Document {
     friend bool operator==(const Document &, const Document &) = default;
 };
 
-// What a new todo file starts as: a comment that topdo skips, which teaches the format by example,
-// and a blank line after it. See docs/design/format.md, "Where the file lives".
-Document newTodoFile();
+// The manual topdo writes as README.md into a new todo folder: the rules of
+// docs/design/format.md, short and by example.
+QString manualText();
 
 // Reads a UTF-8 todo file. Accepts "\n" and "\r\n" line endings.
 Document parse(const QByteArray &bytes);

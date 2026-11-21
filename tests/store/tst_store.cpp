@@ -27,7 +27,9 @@ QByteArray readFile(const QString &path) {
     return file.readAll();
 }
 
-Document tickFirst(const Document &document) { return topdo::setDone(document, 0, true); }
+Document tickFirst(const Document &document) {
+    return topdo::setDone(document, 0, true, {2026, 11, 21});
+}
 
 } // namespace
 
@@ -35,33 +37,47 @@ class TestStore : public QObject {
     Q_OBJECT
 
   private Q_SLOTS:
-    // A missing file reads as the preamble, which holds no todos.
-    void loadsAMissingFileAsANewOne() {
+    void loadsAMissingFileAsEmpty() {
         const QTemporaryDir dir;
-        const auto loaded = topdo::load(dir.filePath("todo.md"));
+        const auto loaded = topdo::load(dir.filePath("todo.txt"));
 
         QVERIFY(loaded);
-        QCOMPARE(*loaded, topdo::newTodoFile());
-        QVERIFY(topdo::findTodos(*loaded).todos.isEmpty());
-        QCOMPARE(topdo::findTodos(*loaded).sections.size(), 1);
+        QCOMPARE(*loaded, Document{});
     }
+
+    // Creating the todo file writes the manual beside it, but never over a README.md that is there.
+    void writesTheManualWithANewFile() {
+        const QTemporaryDir dir;
+        const QString path = dir.filePath("todo.txt");
+        const QString manual = dir.filePath("README.md");
+
+        QVERIFY(topdo::save(path, {.lines = {"a"}}));
+        QCOMPARE(readFile(manual), topdo::manualText().toUtf8());
+
+        writeFile(manual, "mine\n");
+        QFile::remove(path);
+        QVERIFY(topdo::save(path, {.lines = {"a"}}));
+        QCOMPARE(readFile(manual), QByteArray("mine\n"));
+    }
+
+    void namesTheTodoFile() { QCOMPARE(topdo::todoFilePath("/x"), QString("/x/todo.txt")); }
 
     void savesAndLoads() {
         const QTemporaryDir dir;
-        const QString path = dir.filePath("todo.md");
-        const Document document{.lines = {"# Todo", "- [ ] a"}};
+        const QString path = dir.filePath("todo.txt");
+        const Document document{.lines = {"(A) a", "b +Work"}};
 
         QVERIFY(topdo::save(path, document));
 
-        QCOMPARE(readFile(path), QByteArray("# Todo\n- [ ] a\n"));
+        QCOMPARE(readFile(path), QByteArray("(A) a\nb +Work\n"));
         QCOMPARE(topdo::load(path).value(), document);
     }
 
     void saveCreatesTheFolder() {
         const QTemporaryDir dir;
-        const QString path = dir.filePath("todo/nested/todo.md");
+        const QString path = dir.filePath("todo/nested/todo.txt");
 
-        QVERIFY(topdo::save(path, {.lines = {"- [ ] a"}}));
+        QVERIFY(topdo::save(path, {.lines = {"a"}}));
         QVERIFY(QFile::exists(path));
     }
 
@@ -70,10 +86,10 @@ class TestStore : public QObject {
         const QString notAFile = dir.path(); // a folder can't be read as a todo file
         const QString file = dir.filePath("file");
         writeFile(file, "x");
-        const QString underAFile = file + "/todo.md"; // its folder would be a file
+        const QString underAFile = file + "/todo.txt"; // its folder would be a file
 
         const auto loaded = topdo::load(notAFile);
-        const auto saved = topdo::save(underAFile, {.lines = {"- [ ] a"}});
+        const auto saved = topdo::save(underAFile, {.lines = {"a"}});
 
         QVERIFY(!loaded);
         QVERIFY(loaded.error().contains(notAFile));
@@ -83,18 +99,18 @@ class TestStore : public QObject {
 
     void updateWritesTheChange() {
         const QTemporaryDir dir;
-        const QString path = dir.filePath("todo.md");
-        writeFile(path, "- [ ] a\n");
+        const QString path = dir.filePath("todo.txt");
+        writeFile(path, "a\n");
 
         const auto updated = topdo::update(path, tickFirst);
 
         QVERIFY(updated);
-        QCOMPARE(readFile(path), QByteArray("- [x] a\n"));
+        QCOMPARE(readFile(path), QByteArray("x 2026-11-21 a\n"));
     }
 
     void updateLeavesAnUnchangedFileAlone() {
         const QTemporaryDir dir;
-        const QString path = dir.filePath("todo.md");
+        const QString path = dir.filePath("todo.txt");
 
         const auto updated = topdo::update(path, [](const Document &document) { return document; });
 
@@ -105,16 +121,16 @@ class TestStore : public QObject {
     // An edit made elsewhere since the last load (say, in a text editor) is kept.
     void updateStartsFromTheFileOnDisk() {
         const QTemporaryDir dir;
-        const QString path = dir.filePath("todo.md");
-        writeFile(path, "- [ ] a\n");
+        const QString path = dir.filePath("todo.txt");
+        writeFile(path, "a\n");
         const Document seen = topdo::load(path).value();
-        writeFile(path, "- [ ] a\n- [ ] added in an editor\n");
+        writeFile(path, "a\nadded in an editor\n");
 
         const auto updated = topdo::update(path, tickFirst);
 
         QVERIFY(updated);
         QCOMPARE(seen.lines.size(), 1);
-        QCOMPARE(readFile(path), QByteArray("- [x] a\n- [ ] added in an editor\n"));
+        QCOMPARE(readFile(path), QByteArray("x 2026-11-21 a\nadded in an editor\n"));
     }
 
     void readsTheTodoFolderFromTheConfig_data() {

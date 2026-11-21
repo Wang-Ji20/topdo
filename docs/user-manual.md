@@ -87,10 +87,10 @@ Then add the widget "topdo" to the top bar, in place of a spacer.
 Without installing, the build puts the command at `build/dev/src/cli/topdo`.
 
 ```sh
-topdo list                         # open todos, numbered, with the headings
+topdo list                         # open todos, numbered, as written
 topdo list --all                   # done todos too
 topdo add Pay rent due:2026-12-01  # add a todo after the first run of todos
-topdo add Water plants --section Home
+topdo add Water plants --project Home  # adds +Home
 topdo add Book hotel --under 3     # add a subtask of todo 3
 topdo done 2 5                     # tick todos 2 and 5
 topdo undone 2                     # untick todo 2
@@ -142,7 +142,7 @@ can't show where the panel opens.
 To work on the panel alone, show it in a plain window, on any todo file:
 
 ```sh
-QML_IMPORT_PATH=$PWD/build/dev/qml /usr/lib64/qt6/bin/qml plasmoid/preview.qml -- path/to/todo.md
+QML_IMPORT_PATH=$PWD/build/dev/qml /usr/lib64/qt6/bin/qml plasmoid/preview.qml -- path/to/todo.txt
 ```
 
 The keys work there too; there is no blur, since that comes from KWin.

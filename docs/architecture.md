@@ -27,43 +27,43 @@ A `Document` is the file's text as a list of lines, without line endings.
 Rendering joins them with `\n` and adds a final newline:
 
 ```
-file:   "- [ ] a\r\n- [x] b"
-lines:  "- [ ] a", "- [x] b"
-file:   "- [ ] a\n- [x] b\n"     (written back)
+file:   "(A) a\r\nx 2026-11-20 b"
+lines:  "(A) a", "x 2026-11-20 b"
+file:   "(A) a\nx 2026-11-20 b\n"     (written back)
 ```
 
 `findTodos` reads a `Document` line by line and returns a `TodoList`: the
-sections and the todos, each todo pointing at its line, its parent todo and
-its section. It applies the line rules of
+sections (one per `+project`) and the todos, each todo pointing at its
+line, its parent todo (by `id:`/`p:` tags) and its section. It applies the line rules of
 [design/format.md](design/format.md) and nothing more.
 
 Edits are plain functions from a `Document` to the edited copy:
 
 | Function | Changes |
 |---|---|
-| `setDone(document, todo, done)` | the character between the brackets |
-| `setText(document, todo, text)` | the text after the checkbox |
-| `removeTodo(document, todo)` | deletes the todo's line and the indented lines below it |
+| `setDone(document, todo, done, today)` | writes or removes `x <today> `; moves a priority to `pri:` and back |
+| `setText(document, todo, text)` | the text after the priority and the dates |
+| `removeTodo(document, todo)` | deletes the todo's line and its subtasks' lines |
 | `restoreBlock(document, block)` | puts back lines that `todoBlock(document, todo)` named before a removal |
-| `addTodo(document, text, section)` | inserts `- [ ] text` after the first run of todos |
-| `addSubtask(document, todo, text)` | inserts `- [ ] text` as the todo's last subtask, indented like its siblings |
+| `addTodo(document, text, project)` | appends the text, with ` +project` if given |
+| `addSubtask(document, todo, text)` | inserts `text p:ID` after the todo's last subtask, giving it an `id:` |
 
-`todo` and `section` are indexes into what `findTodos` returns for the same
+`todo` is an index into what `findTodos` returns for the same
 document.
 
 Three small functions in `query.h` decide what the widget shows:
 `filterTodos` (the todos the panel lists for a filter text), `nextTodo` (the
 todo on the badge: late, then due today, then the first open one) and
 `depthOf` (how deep a subtask is nested). The rules for where each edit acts are in
-[design/format.md](design/format.md), rules 7 to 9. The line rules that
+[design/format.md](design/format.md), rules 11 to 14. The line rules that
 both `findTodos` and the edits use live in one place, `todoline.h`.
 
 **store** owns the file on disk and the config file. It holds no state:
 
 | Function | Does |
 |---|---|
-| `load(path)` | reads the todo file; a missing file reads as `newTodoFile()`, the preamble |
-| `save(path, document)` | writes it atomically (`QSaveFile`), creating the folder |
+| `load(path)` | reads the todo file; a missing file reads as an empty document |
+| `save(path, document)` | writes it atomically (`QSaveFile`), creating the folder; a new file also gets the `README.md` manual beside it |
 | `update(path, change)` | `load`, apply an edit from core, `save` if anything changed |
 | `configuredDir(configFile)` | the todo folder from `~/.config/topdo/topdo.conf` |
 

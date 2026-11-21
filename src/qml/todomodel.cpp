@@ -138,7 +138,7 @@ void TodoModel::addSubtask(int number, const QString &text) {
 
 void TodoModel::setDone(int number, bool done) {
     editTodo(number, [done](const Document &document, qsizetype todo) {
-        return topdo::setDone(document, todo, done);
+        return topdo::setDone(document, todo, done, QDate::currentDate());
     });
 }
 

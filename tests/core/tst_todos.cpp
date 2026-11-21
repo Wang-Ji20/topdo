@@ -1,4 +1,5 @@
 #include "randomfile.h"
+#include "todoline.h"
 #include "todos.h"
 
 #include <QTest>
@@ -22,15 +23,39 @@ quint32 propertySeed() {
     return ok ? fromEnvironment : QRandomGenerator::global()->generate();
 }
 
-int indentation(const QString &line) {
-    int columns = 0;
-    for (const QChar ch : line) {
-        if (ch != u' ' && ch != u'\t') {
-            break;
+// Random documents, with the seed and file number for a failure message.
+template <typename Check>
+void forRandomFiles(Check check) {
+    const quint32 seed = propertySeed();
+    qInfo("seed %u (replay with TOPDO_SEED=%u)", seed, seed);
+    QRandomGenerator random(seed);
+    for (int i = 0; i < 2000; ++i) {
+        const Document document = topdo::parse(topdo::test::randomTodoFile(random));
+        check(document, QStringLiteral("seed %1, file %2").arg(seed).arg(i));
+        if (QTest::currentTestFailed()) {
+            return;
         }
-        columns += ch == u'\t' ? 4 : 1;
     }
-    return columns;
+}
+
+Todo todo(qsizetype line,
+          qsizetype parent,
+          qsizetype section,
+          bool done,
+          const QString &text,
+          const QString &title,
+          const QString &id = {},
+          std::optional<QDate> due = {}) {
+    return {
+        .line = line,
+        .parent = parent,
+        .section = section,
+        .done = done,
+        .text = text,
+        .title = title,
+        .id = id,
+        .due = due,
+    };
 }
 
 } // namespace
@@ -42,193 +67,138 @@ class TestTodos : public QObject {
     // The example in docs/design/format.md.
     void readsTheFormatExample() {
         const TodoList list = todosIn({
-            "- [ ] Buy milk",                    // 0
-            "",                                  // 1
-            "## Work",                           // 2
-            "",                                  // 3
-            "- [ ] Write report due:2026-11-21", // 4
-            "- [ ] Plan trip",                   // 5
-            "  - [x] Book flight",               // 6
-            "  - [ ] Book hotel",                // 7
-            "  Ask about late check-in.",        // 8
-            "",                                  // 9
-            "## Home",                           // 10
-            "",                                  // 11
-            "* [ ] Call the bank",               // 12
-            "- [x] Renew passport",              // 13
-            "",                                  // 14
-            "Notes that are not todos stay exactly as written.",
+            "(A) Call the bank @phone due:2026-11-21", // 0
+            "Buy milk",                                // 1
+            "Plan trip +Holiday id:1",                 // 2
+            "x 2026-11-20 Book flight +Holiday p:1",   // 3
+            "Book hotel +Holiday p:1",                 // 4
+            "2026-11-18 Write report +Work",           // 5
+            "x 2026-11-19 Renew passport pri:B",       // 6
         });
 
-        const QList<Section> sections = {
-            {.title = "", .line = -1},
-            {.title = "Work", .line = 2},
-            {.title = "Home", .line = 10},
+        QCOMPARE(list.sections,
+                 (QList<Section>{{.title = ""}, {.title = "Holiday"}, {.title = "Work"}}));
+        const QList<Todo> expected = {
+            todo(0,
+                 -1,
+                 0,
+                 false,
+                 "Call the bank @phone due:2026-11-21",
+                 "Call the bank @phone",
+                 "",
+                 QDate(2026, 11, 21)),
+            todo(1, -1, 0, false, "Buy milk", "Buy milk"),
+            todo(2, -1, 1, false, "Plan trip +Holiday id:1", "Plan trip +Holiday", "1"),
+            todo(3, 2, 1, true, "Book flight +Holiday p:1", "Book flight +Holiday"),
+            todo(4, 2, 1, false, "Book hotel +Holiday p:1", "Book hotel +Holiday"),
+            todo(5, -1, 2, false, "Write report +Work", "Write report +Work"),
+            todo(6, -1, 0, true, "Renew passport pri:B", "Renew passport"),
         };
-        QCOMPARE(list.sections, sections);
-
-        const QList<Todo> todos = {
-            {
-                .line = 0,
-                .parent = -1,
-                .section = 0,
-                .done = false,
-                .text = "Buy milk",
-                .title = "Buy milk",
-                .due = std::nullopt,
-            },
-            {
-                .line = 4,
-                .parent = -1,
-                .section = 1,
-                .done = false,
-                .text = "Write report due:2026-11-21",
-                .title = "Write report",
-                .due = QDate(2026, 11, 21),
-            },
-            {
-                .line = 5,
-                .parent = -1,
-                .section = 1,
-                .done = false,
-                .text = "Plan trip",
-                .title = "Plan trip",
-                .due = std::nullopt,
-            },
-            {
-                .line = 6,
-                .parent = 2,
-                .section = 1,
-                .done = true,
-                .text = "Book flight",
-                .title = "Book flight",
-                .due = std::nullopt,
-            },
-            {
-                .line = 7,
-                .parent = 2,
-                .section = 1,
-                .done = false,
-                .text = "Book hotel",
-                .title = "Book hotel",
-                .due = std::nullopt,
-            },
-            {
-                .line = 12,
-                .parent = -1,
-                .section = 2,
-                .done = false,
-                .text = "Call the bank",
-                .title = "Call the bank",
-                .due = std::nullopt,
-            },
-            {
-                .line = 13,
-                .parent = -1,
-                .section = 2,
-                .done = true,
-                .text = "Renew passport",
-                .title = "Renew passport",
-                .due = std::nullopt,
-            },
-        };
-        QCOMPARE(list.todos, todos);
+        QCOMPARE(list.todos, expected);
     }
 
-    void recognisesTodos_data() {
-        QTest::addColumn<QString>("line");
-        QTest::addColumn<bool>("isTodo");
-        QTest::addColumn<bool>("done");
-
-        QTest::newRow("dash") << "- [ ] a" << true << false;
-        QTest::newRow("star") << "* [ ] a" << true << false;
-        QTest::newRow("plus") << "+ [ ] a" << true << false;
-        QTest::newRow("done x") << "- [x] a" << true << true;
-        QTest::newRow("done X") << "- [X] a" << true << true;
-        QTest::newRow("indented") << "    - [ ] a" << true << false;
-        QTest::newRow("tabs") << "\t-\t[ ]\ta" << true << false;
-        QTest::newRow("numbered") << "1. [ ] a" << false << false;
-        QTest::newRow("no space after bullet") << "-[ ] a" << false << false;
-        QTest::newRow("empty checkbox") << "- [] a" << false << false;
-        QTest::newRow("other mark") << "- [y] a" << false << false;
-        QTest::newRow("no space after checkbox") << "- [ ]a" << false << false;
-        QTest::newRow("no text") << "- [ ]" << false << false;
-        QTest::newRow("plain item") << "- a" << false << false;
-    }
-
-    void recognisesTodos() {
-        QFETCH(QString, line);
-        QFETCH(bool, isTodo);
-        QFETCH(bool, done);
-
-        const TodoList list = todosIn({line});
-
-        QCOMPARE(list.todos.size(), isTodo ? 1 : 0);
-        if (isTodo) {
-            QCOMPARE(list.todos.first().done, done);
-        }
-    }
-
-    void skipsCodeFences() {
-        const TodoList list =
-            todosIn({"```", "- [ ] code", "```", "- [ ] a", "~~~md", "# not a heading", "~~~"});
-
-        QCOMPARE(list.todos.size(), 1);
-        QCOMPARE(list.todos.first().line, 3);
-        QCOMPARE(list.sections.size(), 1);
-    }
-
-    void skipsComments() {
-        const TodoList list = todosIn({
-            "<!--",
-            "- [ ] in a comment",
-            "# not a heading",
-            "-->",
-            "- [ ] a", // 4
-            "<!-- one line --> - [ ] b",
-            "  <!-- opens",
-            "- [ ] in a comment -->",
-            "```",
-            "<!-- in a fence: no comment",
-            "```",
-            "- [ ] c", // 11
-        });
+    void skipsBlankLines() {
+        const TodoList list = todosIn({"", "a", "   ", "\t", "b"});
 
         QCOMPARE(list.todos.size(), 2);
-        QCOMPARE(list.todos.at(0).line, 4);
-        QCOMPARE(list.todos.at(1).line, 11);
-        QCOMPARE(list.sections.size(), 1);
+        QCOMPARE(list.todos.at(1).line, 4);
     }
 
-    void needsSpaceAfterHashes() {
-        const TodoList list = todosIn({"#hashtag", "####### seven", "### Three ###"});
+    // The examples of the todo.txt spec.
+    void splitsTheLineParts_data() {
+        QTest::addColumn<QString>("line");
+        QTest::addColumn<bool>("done");
+        QTest::addColumn<QString>("priority"); // empty: none
+        QTest::addColumn<QString>("completed");
+        QTest::addColumn<QString>("created");
+        QTest::addColumn<QString>("text");
 
-        QCOMPARE(list.sections.size(), 2);
-        QCOMPARE(list.sections.last().title, QString("Three ###"));
+        QTest::newRow("priority") << "(A) Call Mom" << false << "A" << "" << "" << "Call Mom";
+        QTest::newRow("priority and date")
+            << "(A) 2011-03-02 Call Mom" << false << "A" << "" << "2011-03-02" << "Call Mom";
+        QTest::newRow("date only")
+            << "2011-03-02 Document" << false << "" << "" << "2011-03-02" << "Document";
+        QTest::newRow("priority not first")
+            << "Call Mom (A)" << false << "" << "" << "" << "Call Mom (A)";
+        QTest::newRow("lowercase priority")
+            << "(b) Get back" << false << "" << "" << "" << "(b) Get back";
+        QTest::newRow("no space after priority")
+            << "(B)->Submit" << false << "" << "" << "" << "(B)->Submit";
+        QTest::newRow("date at the end")
+            << "(A) Call Mom 2011-03-02" << false << "A" << "" << "" << "Call Mom 2011-03-02";
+        QTest::newRow("done") << "x 2011-03-03 Call Mom" << true << "" << "2011-03-03" << ""
+                              << "Call Mom";
+        QTest::newRow("done with both dates") << "x 2011-03-05 2011-03-03 Call Dad" << true << ""
+                                              << "2011-03-05" << "2011-03-03" << "Call Dad";
+        QTest::newRow("done without date")
+            << "x (A) pay water bill" << true << "" << "" << "" << "(A) pay water bill";
+        QTest::newRow("xylophone")
+            << "xylophone lesson" << false << "" << "" << "" << "xylophone lesson";
+        QTest::newRow("capital X")
+            << "X 2012-01-01 Make" << false << "" << "" << "" << "X 2012-01-01 Make";
+        QTest::newRow("x after priority")
+            << "(A) x Find tickets" << false << "A" << "" << "" << "x Find tickets";
     }
 
-    void nestsByIndentation() {
-        const TodoList list = todosIn({
-            "- [ ] a",       // 0: top level
-            "  - [ ] b",     // 1: under a
-            "      - [ ] c", // 2: under b
-            "    - [ ] d",   // 3: under b (less than c, more than b)
-            "\t- [ ] e",     // 4: a tab is four columns: under b
-            "- [ ] f",       // 5: top level again
-            "  - [ ] g",     // 6: under f
-            "  A note",      // a note ends nesting at its indentation
-            "  - [ ] i",     // 7: still under f
-            "Some note",     // an unindented note ends all nesting
-            "  - [ ] j",     // 8: top level
-            "# Heading",     // a heading ends nesting
-            "  - [ ] h",     // 9: top level of the new section
-        });
+    void splitsTheLineParts() {
+        QFETCH(QString, line);
+        QFETCH(bool, done);
+        QFETCH(QString, priority);
+        QFETCH(QString, completed);
+        QFETCH(QString, created);
+        QFETCH(QString, text);
 
-        QList<qsizetype> parents;
-        for (const Todo &todo : list.todos) {
-            parents.append(todo.parent);
+        const topdo::TodoLine parts = topdo::splitTodoLine(line);
+
+        QCOMPARE(parts.done, done);
+        QCOMPARE(parts.priority ? QString(*parts.priority) : QString(), priority);
+        QCOMPARE(parts.completed.value_or(QString()), completed);
+        QCOMPARE(parts.created.value_or(QString()), created);
+        QCOMPARE(parts.text, text);
+    }
+
+    void readsProjectsAsSections() {
+        const TodoList list = todosIn({"a +Work +Home", "b +Home", "c", "d 2+2", "e +", "f +Work"});
+
+        QCOMPARE(list.sections,
+                 (QList<Section>{{.title = ""}, {.title = "Work"}, {.title = "Home"}}));
+        QList<qsizetype> sections;
+        for (const Todo &each : list.todos) {
+            sections.append(each.section);
         }
-        QCOMPARE(parents, (QList<qsizetype>{-1, 0, 1, 1, 1, -1, 5, 5, -1, -1}));
+        QCOMPARE(sections, (QList<qsizetype>{1, 2, 0, 0, 0, 1}));
+    }
+
+    void linksSubtasks_data() {
+        QTest::addColumn<QStringList>("lines");
+        QTest::addColumn<QList<qsizetype>>("parents");
+
+        QTest::newRow("parent after its subtask")
+            << QStringList{"b p:1", "a id:1"} << QList<qsizetype>{1, -1};
+        QTest::newRow("nested") << QStringList{"a id:1", "b id:2 p:1", "c p:2"}
+                                << QList<qsizetype>{-1, 0, 1};
+        QTest::newRow("unknown id") << QStringList{"a id:1", "b p:9"} << QList<qsizetype>{-1, -1};
+        QTest::newRow("first id counts")
+            << QStringList{"a id:1", "b id:1", "c p:1"} << QList<qsizetype>{-1, -1, 0};
+        QTest::newRow("first p counts")
+            << QStringList{"a id:1", "b id:2", "c p:2 p:1"} << QList<qsizetype>{-1, -1, 1};
+        QTest::newRow("own id") << QStringList{"a id:1 p:1"} << QList<qsizetype>{-1};
+        QTest::newRow("circle") << QStringList{"a id:1 p:2", "b id:2 p:1", "c p:1"}
+                                << QList<qsizetype>{-1, -1, 0};
+        QTest::newRow("empty tags") << QStringList{"a id:", "b p:"} << QList<qsizetype>{-1, -1};
+    }
+
+    void linksSubtasks() {
+        QFETCH(QStringList, lines);
+        QFETCH(QList<qsizetype>, parents);
+
+        const TodoList list = todosIn(lines);
+
+        QList<qsizetype> found;
+        for (const Todo &each : list.todos) {
+            found.append(each.parent);
+        }
+        QCOMPARE(found, parents);
     }
 
     void splitsDueDates_data() {
@@ -242,10 +212,11 @@ class TestTodos : public QObject {
             << "Call due:2026-11-21 Bob" << "Call Bob" << QDate(2026, 11, 21);
         QTest::newRow("invalid date stays text")
             << "Call due:2026-13-40" << "Call due:2026-13-40" << QDate();
-        QTest::newRow("first valid counts")
-            << "a due:2026-13-40 due:2026-01-02 due:2026-03-04"
-            << "a due:2026-13-40 due:2026-03-04" << QDate(2026, 1, 2);
+        QTest::newRow("first valid counts") << "a due:2026-13-40 due:2026-01-02 due:2026-03-04"
+                                            << "a due:2026-13-40" << QDate(2026, 1, 2);
         QTest::newRow("part of a word") << "overdue:2026-11-21" << "overdue:2026-11-21" << QDate();
+        QTest::newRow("other tags stay")
+            << "see https://x.y a:b" << "see https://x.y a:b" << QDate();
     }
 
     void splitsDueDates() {
@@ -253,37 +224,39 @@ class TestTodos : public QObject {
         QFETCH(QString, title);
         QFETCH(QDate, due);
 
-        const Todo todo = todosIn({"- [ ] " + text}).todos.first();
+        const Todo first = todosIn({text}).todos.first();
 
-        QCOMPARE(todo.title, title);
-        QCOMPARE(todo.due.value_or(QDate()), due);
+        QCOMPARE(first.title, title);
+        QCOMPARE(first.due.value_or(QDate()), due);
     }
 
-    // A parent comes before its subtask, is less indented, and is in the same section.
-    void parentsPrecedeSubtasks() {
-        const quint32 seed = propertySeed();
-        qInfo("seed %u (replay with TOPDO_SEED=%u)", seed, seed);
-        QRandomGenerator random(seed);
-        for (int i = 0; i < 2000; ++i) {
-            const QByteArray bytes = topdo::test::randomTodoFile(random);
-            const Document document = topdo::parse(bytes);
+    // Splitting a line and joining its parts gives back the line.
+    void joinsWhatItSplits() {
+        forRandomFiles([](const Document &document, const QString &where) {
+            for (const QString &line : document.lines) {
+                const QString joined = topdo::joinTodoLine(topdo::splitTodoLine(line));
+                QVERIFY2(joined == line, qPrintable(where + ": " + line));
+            }
+        });
+    }
+
+    // A parent has the id its subtask's p: tag names, and parents never lead in a circle.
+    void parentsAreSound() {
+        forRandomFiles([](const Document &document, const QString &where) {
             const TodoList list = topdo::findTodos(document);
-            for (const Todo &todo : list.todos) {
-                if (todo.parent < 0) {
+            for (const Todo &each : list.todos) {
+                if (each.parent < 0) {
                     continue;
                 }
-                const Todo &parent = list.todos.at(todo.parent);
-                const int parentIndent = indentation(document.lines.at(parent.line));
-                const int indent = indentation(document.lines.at(todo.line));
-                const bool ok = parent.line < todo.line && parentIndent < indent &&
-                                parent.section == todo.section;
-                QVERIFY2(ok,
-                         qPrintable(QStringLiteral("seed %1, file %2, line %3")
-                                        .arg(seed)
-                                        .arg(i)
-                                        .arg(todo.line)));
+                const QString tag = "p:" + list.todos.at(each.parent).id;
+                QVERIFY2(topdo::tagValue(each.text, "p") == list.todos.at(each.parent).id,
+                         qPrintable(where + ": " + tag));
+                qsizetype steps = 0;
+                for (qsizetype up = each.parent; up >= 0; up = list.todos.at(up).parent) {
+                    QVERIFY2(++steps <= list.todos.size(), qPrintable(where));
+                }
             }
-        }
+        });
     }
 };
 

@@ -38,5 +38,5 @@ long term.
 - [x] The badge stays centred with a second screen left of the bar's.
 - [x] Subtasks: `core` edit, `topdo add --under`, Shift+Enter in the panel.
 - [x] Remove with Shift+Backspace too; Ctrl+Z puts removed todos back.
-- [x] New todo files start with a preamble; topdo skips HTML comments.
+- [x] The todo file is a todo.txt file (docs/design/format.md), with a manual in the folder.
 - [ ] Check the badge centring and the new keys in the real top bar.

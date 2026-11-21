@@ -4,8 +4,7 @@
 #include "todos.h"
 
 #include <QCommandLineParser>
-#include <QHash>
-#include <QSet>
+#include <QDate>
 
 #include <algorithm>
 #include <functional>
@@ -22,8 +21,8 @@ struct Request {
     QString path;
     QStringList arguments;
     bool all = false;
-    std::optional<QString> section;
-    std::optional<QString> under; // add: the number of the todo to add a subtask to
+    std::optional<QString> project; // add: the project to add to
+    std::optional<QString> under;   // add: the number of the todo to add a subtask to
 };
 
 // A change to the todo file that can fail, for example on a number that isn't a todo.
@@ -45,22 +44,10 @@ int listCommand(const Request &request, QTextStream &out, QTextStream &err) {
     }
     const TodoList list = findTodos(*document);
     const int width = static_cast<int>(QString::number(list.todos.size()).size());
-    QHash<qsizetype, qsizetype> todoAtLine;
     for (qsizetype i = 0; i < list.todos.size(); ++i) {
-        todoAtLine.insert(list.todos.at(i).line, i);
-    }
-    QSet<qsizetype> headingLines;
-    for (const Section &section : list.sections) {
-        headingLines.insert(section.line);
-    }
-    for (qsizetype line = 0; line < document->lines.size(); ++line) {
-        const QString &text = document->lines.at(line);
-        if (headingLines.contains(line)) {
-            out << text << '\n';
-        }
-        const auto todo = todoAtLine.constFind(line);
-        if (todo != todoAtLine.constEnd() && (request.all || !list.todos.at(*todo).done)) {
-            out << numberColumn(*todo + 1, width) << text << '\n';
+        const Todo &todo = list.todos.at(i);
+        if (request.all || !todo.done) {
+            out << numberColumn(i + 1, width) << document->lines.at(todo.line) << '\n';
         }
     }
     return 0;
@@ -126,17 +113,9 @@ Edit eachTodo(const QStringList &numbers,
     };
 }
 
-Edit addToSection(const QString &text, const std::optional<QString> &section) {
+Edit addTo(const QString &text, const std::optional<QString> &project) {
     return [=](const Document &document) -> std::expected<Document, QString> {
-        if (!section) {
-            return addTodo(document, text, std::nullopt);
-        }
-        const TodoList list = findTodos(document);
-        const auto found = std::ranges::find(list.sections, *section, &Section::title);
-        if (found == list.sections.end()) {
-            return std::unexpected(QStringLiteral("no section \"%1\"").arg(*section));
-        }
-        return addTodo(document, text, found - list.sections.begin());
+        return addTodo(document, text, project);
     };
 }
 
@@ -173,12 +152,12 @@ int runCommand(const QString &command,
         if (text.isEmpty()) {
             return usageError(parser, QStringLiteral("add needs the todo's text"), err);
         }
-        if (request.under && request.section) {
+        if (request.under && request.project) {
             return usageError(
-                parser, QStringLiteral("add takes --section or --under, not both"), err);
+                parser, QStringLiteral("add takes --project or --under, not both"), err);
         }
         const Edit edit =
-            request.under ? addUnder(text, *request.under) : addToSection(text, request.section);
+            request.under ? addUnder(text, *request.under) : addTo(text, request.project);
         return editCommand(request, edit, err);
     }
     const bool numbered = command == u"done" || command == u"undone" || command == u"rm";
@@ -189,7 +168,7 @@ int runCommand(const QString &command,
         return editCommand(request,
                            eachTodo(arguments,
                                     [](const Document &document, qsizetype todo) {
-                                        return setDone(document, todo, true);
+                                        return setDone(document, todo, true, QDate::currentDate());
                                     }),
                            err);
     }
@@ -197,7 +176,7 @@ int runCommand(const QString &command,
         return editCommand(request,
                            eachTodo(arguments,
                                     [](const Document &document, qsizetype todo) {
-                                        return setDone(document, todo, false);
+                                        return setDone(document, todo, false, QDate::currentDate());
                                     }),
                            err);
     }
@@ -222,9 +201,9 @@ int runCommand(const QString &command,
 int runCli(const QStringList &arguments, QTextStream &out, QTextStream &err) {
     QCommandLineParser parser;
     parser.setApplicationDescription(
-        QStringLiteral("A todo list in a Markdown file.\n\n"
+        QStringLiteral("A todo list in a todo.txt file.\n\n"
                        "Commands:\n"
-                       "  list                 the open todos, numbered\n"
+                       "  list                 the open todos, numbered, as written\n"
                        "  add <text>...        add a todo\n"
                        "  done <n>...          tick todos\n"
                        "  undone <n>...        untick todos\n"
@@ -235,9 +214,9 @@ int runCli(const QStringList &arguments, QTextStream &out, QTextStream &err) {
     parser.addOption(
         {QStringLiteral("dir"), QStringLiteral("Use this todo folder."), QStringLiteral("folder")});
     parser.addOption({QStringLiteral("all"), QStringLiteral("list: also show done todos.")});
-    parser.addOption({QStringLiteral("section"),
-                      QStringLiteral("add: add to this section."),
-                      QStringLiteral("heading")});
+    parser.addOption({QStringLiteral("project"),
+                      QStringLiteral("add: add to this +project."),
+                      QStringLiteral("name")});
     parser.addOption({QStringLiteral("under"),
                       QStringLiteral("add: add as a subtask of this todo."),
                       QStringLiteral("n")});
@@ -255,7 +234,7 @@ int runCli(const QStringList &arguments, QTextStream &out, QTextStream &err) {
         .path = todoFilePath(dir),
         .arguments = positional,
         .all = parser.isSet("all"),
-        .section = parser.isSet("section") ? std::optional(parser.value("section")) : std::nullopt,
+        .project = parser.isSet("project") ? std::optional(parser.value("project")) : std::nullopt,
         .under = parser.isSet("under") ? std::optional(parser.value("under")) : std::nullopt,
     };
     return runCommand(command, request, parser, out, err);

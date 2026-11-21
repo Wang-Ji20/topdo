@@ -2,7 +2,10 @@
 #include "todoline.h"
 #include "todos.h"
 
+#include <QSet>
+
 #include <algorithm>
+#include <ranges>
 
 namespace topdo {
 
@@ -13,132 +16,150 @@ qsizetype lineOf(const Document &document, qsizetype todo) {
     return list.todos.at(todo).line;
 }
 
-struct LocatedTodo {
-    qsizetype line = 0;
-    TodoLine match;
-};
-
-LocatedTodo locate(const Document &document, qsizetype todo) {
-    const qsizetype line = lineOf(document, todo);
-    const std::optional<TodoLine> match = matchTodoLine(document.lines.at(line));
-    Q_ASSERT(match); // findTodos() found a todo on this line
-    return {.line = line, .match = *match};
+// A "pri:A" word with a valid priority letter.
+bool isPriorityTag(const QString &word) {
+    return word.size() == 5 && word.startsWith(u"pri:") && word.at(4) >= u'A' && word.at(4) <= u'Z';
 }
 
-// The last line of a todo's block: the todo and the lines indented more than it below it.
-// Blank lines inside the block belong to it; blank lines after it don't.
-qsizetype blockEnd(const QStringList &lines, qsizetype first) {
-    const int indent = indentation(lines.at(first));
-    qsizetype last = first;
-    for (qsizetype i = first + 1; i < lines.size(); ++i) {
-        const QString &line = lines.at(i);
-        if (isBlank(line)) {
-            continue;
+TodoLine ticked(TodoLine todo, QDate today) {
+    todo.done = true;
+    todo.completed = today.toString(Qt::ISODate);
+    if (todo.priority) {
+        todo.text += QStringLiteral(" pri:") + *todo.priority;
+        todo.priority.reset();
+    }
+    return todo;
+}
+
+TodoLine unticked(TodoLine todo) {
+    todo.done = false;
+    todo.completed.reset();
+    const QStringList words = wordsOf(todo.text);
+    const auto tag = std::ranges::find_if(words, isPriorityTag);
+    if (tag != words.end()) {
+        todo.priority = tag->at(4);
+        todo.text = withoutWords(todo.text, [&tag](const QString &word) { return word == *tag; });
+    }
+    return todo;
+}
+
+// A todo and its subtasks, their subtasks, and so on, as indexes into list.todos in file order.
+QList<qsizetype> subtree(const TodoList &list, qsizetype todo) {
+    QList<qsizetype> members{todo};
+    for (qsizetype i = 0; i < list.todos.size(); ++i) {
+        for (qsizetype up = list.todos.at(i).parent; up >= 0; up = list.todos.at(up).parent) {
+            if (up == todo) {
+                members.append(i);
+                break;
+            }
         }
-        if (indentation(line) <= indent) {
-            break;
+    }
+    std::ranges::sort(members, {}, [&list](qsizetype i) { return list.todos.at(i).line; });
+    return members;
+}
+
+qsizetype afterLastText(const QStringList &lines) {
+    for (qsizetype i = lines.size(); i > 0; --i) {
+        if (!isBlank(lines.at(i - 1))) {
+            return i;
         }
-        last = i;
     }
-    return last;
+    return 0;
 }
 
-// The last line of the run of todos that starts at `first`: todo blocks that follow each other
-// directly, with no blank or other line between them.
-qsizetype runEnd(const QStringList &lines, qsizetype first) {
-    qsizetype last = blockEnd(lines, first);
-    while (last + 1 < lines.size() && matchTodoLine(lines.at(last + 1))) {
-        last = blockEnd(lines, last + 1);
+// The smallest whole number from 1 that no todo uses as its id.
+QString freeId(const TodoList &list) {
+    QSet<QString> used;
+    for (const Todo &todo : list.todos) {
+        used.insert(todo.id);
     }
-    return last;
-}
-
-qsizetype insertionLine(const Document &document, std::optional<qsizetype> section) {
-    const TodoList list = findTodos(document);
-    const auto inScope = [&](const Todo &todo) { return !section || todo.section == *section; };
-    const auto first = std::ranges::find_if(list.todos, inScope);
-    if (first != list.todos.end()) {
-        return runEnd(document.lines, first->line) + 1;
+    int id = 1;
+    while (used.contains(QString::number(id))) {
+        ++id;
     }
-    if (section) {
-        return list.sections.at(*section).line + 1; // the unnamed section's line is -1
-    }
-    return document.lines.size();
-}
-
-// The spaces and tabs at the start of a line, as written.
-QString leadingWhitespace(const QString &line) {
-    qsizetype end = 0;
-    while (end < line.size() && (line.at(end) == u' ' || line.at(end) == u'\t')) {
-        ++end;
-    }
-    return line.left(end);
-}
-
-// The indentation for a new subtask of `todo`: its last subtask's, or two spaces more than its own.
-QString subtaskIndent(const QStringList &lines, const TodoList &list, qsizetype todo) {
-    const auto isChild = [todo](const Todo &other) { return other.parent == todo; };
-    const auto lastChild = std::ranges::find_last_if(list.todos, isChild).begin();
-    if (lastChild == list.todos.end()) {
-        return leadingWhitespace(lines.at(list.todos.at(todo).line)) + QStringLiteral("  ");
-    }
-    return leadingWhitespace(lines.at(lastChild->line));
+    return QString::number(id);
 }
 
 } // namespace
 
-Document setDone(const Document &document, qsizetype todo, bool done) {
-    const auto [line, match] = locate(document, todo);
-    if (match.done == done) {
-        return document; // an [X] stays as written
+Document setDone(const Document &document, qsizetype todo, bool done, QDate today) {
+    const qsizetype line = lineOf(document, todo);
+    const TodoLine parts = splitTodoLine(document.lines.at(line));
+    if (parts.done == done) {
+        return document;
+    }
+    const QString changed = joinTodoLine(done ? ticked(parts, today) : unticked(parts));
+    // Unticking "x " with no text gives a blank line, and "x x y" gives "x y", done again: an open
+    // todo can't be written that way, so it stays done.
+    if (isBlank(changed) || splitTodoLine(changed).done != done) {
+        return document;
     }
     Document edited = document;
-    edited.lines[line][match.markColumn] = done ? u'x' : u' ';
+    edited.lines[line] = changed;
     return edited;
 }
 
 Document setText(const Document &document, qsizetype todo, const QString &text) {
-    const auto [line, match] = locate(document, todo);
+    const qsizetype line = lineOf(document, todo);
+    TodoLine parts = splitTodoLine(document.lines.at(line));
+    parts.text = text;
     Document edited = document;
-    edited.lines[line] = document.lines.at(line).left(match.textColumn) + text;
+    edited.lines[line] = joinTodoLine(parts);
     return edited;
 }
 
 Block todoBlock(const Document &document, qsizetype todo) {
-    const qsizetype first = lineOf(document, todo);
-    const qsizetype last = blockEnd(document.lines, first);
-    return {.line = first, .lines = document.lines.mid(first, last - first + 1)};
+    const TodoList list = findTodos(document);
+    Block block;
+    for (const qsizetype member : subtree(list, todo)) {
+        const qsizetype line = list.todos.at(member).line;
+        block.append({.line = line, .text = document.lines.at(line)});
+    }
+    return block;
 }
 
 Document removeTodo(const Document &document, qsizetype todo) {
     const Block block = todoBlock(document, todo);
     Document edited = document;
-    edited.lines.remove(block.line, block.lines.size());
-    return edited;
-}
-
-Document restoreBlock(const Document &document, const Block &block) {
-    const qsizetype line = std::min(block.line, document.lines.size());
-    Document edited = document;
-    for (qsizetype i = 0; i < block.lines.size(); ++i) {
-        edited.lines.insert(line + i, block.lines.at(i));
+    for (const RemovedLine &removed : block | std::views::reverse) {
+        edited.lines.remove(removed.line);
     }
     return edited;
 }
 
-Document addTodo(const Document &document, const QString &text, std::optional<qsizetype> section) {
-    const qsizetype line = insertionLine(document, section);
+Document restoreBlock(const Document &document, const Block &block) {
     Document edited = document;
-    edited.lines.insert(line, QStringLiteral("- [ ] ") + text);
+    for (const RemovedLine &removed : block) {
+        const qsizetype line = std::min(removed.line, edited.lines.size());
+        edited.lines.insert(line, removed.text);
+    }
+    return edited;
+}
+
+Document
+addTodo(const Document &document, const QString &text, const std::optional<QString> &project) {
+    QString line = text;
+    if (project) {
+        const QString word = u'+' + *project;
+        if (!wordsOf(text).contains(word)) {
+            line += u' ' + word;
+        }
+    }
+    Document edited = document;
+    edited.lines.insert(afterLastText(document.lines), line);
     return edited;
 }
 
 Document addSubtask(const Document &document, qsizetype todo, const QString &text) {
     const TodoList list = findTodos(document);
-    const qsizetype line = blockEnd(document.lines, list.todos.at(todo).line) + 1;
-    const QString indent = subtaskIndent(document.lines, list, todo);
+    const Todo &parent = list.todos.at(todo);
+    const QString id = parent.id.isEmpty() ? freeId(list) : parent.id;
+    const qsizetype last = list.todos.at(subtree(list, todo).constLast()).line;
     Document edited = document;
-    edited.lines.insert(line, indent + QStringLiteral("- [ ] ") + text);
+    if (parent.id.isEmpty()) {
+        edited.lines[parent.line] += QStringLiteral(" id:") + id;
+    }
+    edited.lines.insert(last + 1, text + QStringLiteral(" p:") + id);
     return edited;
 }
 

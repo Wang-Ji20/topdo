@@ -2,45 +2,47 @@
 
 #include "document.h"
 
+#include <QDate>
+#include <QList>
 #include <QString>
-#include <QStringList>
 
 #include <optional>
 
 namespace topdo {
 
-// Edits of a todo file; see docs/design/format.md, rules 7 to 9. Each takes a document and returns
-// the edited copy. `todo` is an index into findTodos(document).todos, and `section` an index into
-// findTodos(document).sections. Text is a single line, without "\n".
+// Edits of a todo file; see docs/design/format.md, rules 11 to 14. Each takes a document and
+// returns the edited copy. `todo` is an index into findTodos(document).todos. Text is a single
+// line, without "\n".
 
-// Ticks or unticks a todo. Only the character between the brackets changes.
-Document setDone(const Document &document, qsizetype todo, bool done);
+// Ticks or unticks a todo. Ticking writes "x <today> " in front and moves a priority to pri:.
+Document setDone(const Document &document, qsizetype todo, bool done, QDate today);
 
-// Replaces the text after the checkbox.
+// Replaces the text after the priority and the dates.
 Document setText(const Document &document, qsizetype todo, const QString &text);
 
-// Removes a todo with its subtasks and notes: the lines indented more than it below it.
+// Removes a todo with its subtasks, their subtasks, and so on.
 Document removeTodo(const Document &document, qsizetype todo);
 
 // The lines removeTodo() removes, and where they were, so that they can be put back.
-struct Block {
+struct RemovedLine {
     qsizetype line = 0;
-    QStringList lines;
+    QString text;
 
-    friend bool operator==(const Block &, const Block &) = default;
+    friend bool operator==(const RemovedLine &, const RemovedLine &) = default;
 };
+using Block = QList<RemovedLine>; // in file order
 
 Block todoBlock(const Document &document, qsizetype todo);
 
-// Puts removed lines back at their old line, or at the end if the file is now shorter.
+// Puts removed lines back at their old lines, or at the end if the file is now shorter.
 Document restoreBlock(const Document &document, const Block &block);
 
-// Adds "- [ ] text" after the first run of todos of the section, or of the file if no section is
-// given.
-Document addTodo(const Document &document, const QString &text, std::optional<qsizetype> section);
+// Adds a todo after the last line that isn't blank, with " +project" appended unless the text has
+// that project already.
+Document
+addTodo(const Document &document, const QString &text, const std::optional<QString> &project);
 
-// Adds "- [ ] text" as the last subtask of a todo: after its block, indented like its last
-// subtask, or two spaces more than the todo if it has none.
+// Adds "text p:ID" after the last subtask of a todo, giving the todo an id: tag if it has none.
 Document addSubtask(const Document &document, qsizetype todo, const QString &text);
 
 } // namespace topdo

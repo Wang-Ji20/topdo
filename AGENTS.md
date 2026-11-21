@@ -4,7 +4,7 @@ Rules for any coding agent (Claude Code and others) working on topdo. They
 record what the maintainer and the agent have agreed on.
 
 topdo is a todo list for the KDE Plasma desktop: a badge in the middle of the
-top bar opens a popup with the list. The list lives in a plain Markdown file,
+top bar opens a popup with the list. The list lives in a plain todo.txt file,
 and a command-line tool and an MCP server read and edit the same file.
 
 ## Git workflow
@@ -42,7 +42,7 @@ Keep the code as simple as the current task allows. Add an abstraction when a
 concrete task needs it, not to anticipate every possible case. We start small
 and let the design grow with the requirements.
 
-- **Never lose the user's data.** The Markdown file belongs to the user. An
+- **Never lose the user's data.** The todo file belongs to the user. An
   edit changes only the lines it touches; every other line keeps its content.
   Writes are atomic (`QSaveFile`). If the file changed on disk since it was
   read, reload and reapply the edit; never overwrite.

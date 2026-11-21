@@ -1,6 +1,6 @@
 #include "cli.h"
-#include "document.h"
 
+#include <QDate>
 #include <QFile>
 #include <QTemporaryDir>
 #include <QTest>
@@ -9,23 +9,16 @@ namespace {
 
 // The example in docs/design/format.md.
 QByteArray exampleFile() {
-    return "- [ ] Buy milk\n"
-           "\n"
-           "## Work\n"
-           "\n"
-           "- [ ] Write report due:2026-11-21\n"
-           "- [ ] Plan trip\n"
-           "  - [x] Book flight\n"
-           "  - [ ] Book hotel\n"
-           "  Ask about late check-in.\n"
-           "\n"
-           "## Home\n"
-           "\n"
-           "* [ ] Call the bank\n"
-           "- [x] Renew passport\n"
-           "\n"
-           "Notes that are not todos stay exactly as written.\n";
+    return "(A) Call the bank @phone due:2026-11-21\n"
+           "Buy milk\n"
+           "Plan trip +Holiday id:1\n"
+           "x 2026-11-20 Book flight +Holiday p:1\n"
+           "Book hotel +Holiday p:1\n"
+           "2026-11-18 Write report +Work\n"
+           "x 2026-11-19 Renew passport pri:B\n";
 }
+
+QString today() { return QDate::currentDate().toString(Qt::ISODate); }
 
 struct Result {
     int status = 0;
@@ -40,7 +33,7 @@ class Cli {
         if (todoFile.isEmpty()) {
             return;
         }
-        QFile file(m_dir.filePath("todo.md"));
+        QFile file(m_dir.filePath("todo.txt"));
         if (!file.open(QIODevice::WriteOnly)) {
             qFatal("cannot write the test todo file");
         }
@@ -64,7 +57,7 @@ class Cli {
         return file.readAll();
     }
 
-    [[nodiscard]] QString todoFile() const { return m_dir.filePath("todo.md"); }
+    [[nodiscard]] QString todoFile() const { return m_dir.filePath("todo.txt"); }
 
   private:
     QTemporaryDir m_dir;
@@ -76,38 +69,36 @@ class TestCli : public QObject {
     Q_OBJECT
 
   private Q_SLOTS:
-    void listsOpenTodosAndHeadings() {
+    void listsOpenTodosAsWritten() {
         const Result result = Cli(exampleFile()).run({"list"});
 
         QCOMPARE(result.status, 0);
         QCOMPARE(result.out,
-                 QString("1  - [ ] Buy milk\n"
-                         "## Work\n"
-                         "2  - [ ] Write report due:2026-11-21\n"
-                         "3  - [ ] Plan trip\n"
-                         "5    - [ ] Book hotel\n"
-                         "## Home\n"
-                         "6  * [ ] Call the bank\n"));
+                 QString("1  (A) Call the bank @phone due:2026-11-21\n"
+                         "2  Buy milk\n"
+                         "3  Plan trip +Holiday id:1\n"
+                         "5  Book hotel +Holiday p:1\n"
+                         "6  2026-11-18 Write report +Work\n"));
         QCOMPARE(result.err, QString());
     }
 
     void listsDoneTodosWithAll() {
         const Result result = Cli(exampleFile()).run({"list", "--all"});
 
-        QVERIFY(result.out.contains("4    - [x] Book flight\n"));
-        QVERIFY(result.out.contains("7  - [x] Renew passport\n"));
+        QVERIFY(result.out.contains("4  x 2026-11-20 Book flight +Holiday p:1\n"));
+        QVERIFY(result.out.contains("7  x 2026-11-19 Renew passport pri:B\n"));
     }
 
     void alignsNumbers() {
         QByteArray file;
         for (int i = 1; i <= 10; ++i) {
-            file += "- [ ] t" + QByteArray::number(i) + "\n";
+            file += "t" + QByteArray::number(i) + "\n";
         }
 
         const Result result = Cli(file).run({"list"});
 
-        QVERIFY(result.out.startsWith(" 1  - [ ] t1\n"));
-        QVERIFY(result.out.endsWith("10  - [ ] t10\n"));
+        QVERIFY(result.out.startsWith(" 1  t1\n"));
+        QVERIFY(result.out.endsWith("10  t10\n"));
     }
 
     void listsNothingWithoutAFile() {
@@ -134,8 +125,8 @@ class TestCli : public QObject {
         QTest::newRow("unknown option")
             << QStringList{"list", "--bogus"} << "topdo: Unknown option 'bogus'.";
         QTest::newRow("section and under")
-            << QStringList{"add", "a", "--section", "Home", "--under", "1"}
-            << "topdo: add takes --section or --under, not both";
+            << QStringList{"add", "a", "--project", "Home", "--under", "1"}
+            << "topdo: add takes --project or --under, not both";
     }
 
     void rejectsUnknownCommandsAndOptions() {
@@ -153,56 +144,59 @@ class TestCli : public QObject {
         const Cli cli(exampleFile());
 
         const Result first = cli.run({"add", "Pay", "rent", "due:2026-12-01"});
-        const Result second = cli.run({"add", "Water", "plants", "--section", "Home"});
+        const Result second = cli.run({"add", "Water", "plants", "--project", "Home"});
 
         QCOMPARE(first.status, 0);
         QCOMPARE(first.out, QString()); // silent on success
         QCOMPARE(second.status, 0);
-        QVERIFY(cli.contents().startsWith("- [ ] Buy milk\n- [ ] Pay rent due:2026-12-01\n"));
-        QVERIFY(cli.contents().contains("- [x] Renew passport\n- [ ] Water plants\n"));
+        QCOMPARE(cli.contents(), exampleFile() + "Pay rent due:2026-12-01\nWater plants +Home\n");
     }
 
     void addsSubtasks() {
         const Cli cli(exampleFile());
 
         QCOMPARE(cli.run({"add", "--under", "3", "Pack", "bags"}).status, 0);
-        QCOMPARE(cli.run({"add", "Get", "milk", "--under", "1"}).status, 0);
+        QCOMPARE(cli.run({"add", "Find", "branch", "--under", "1"}).status, 0);
 
-        QVERIFY(cli.contents().startsWith("- [ ] Buy milk\n  - [ ] Get milk\n"));
-        QVERIFY(cli.contents().contains("  Ask about late check-in.\n  - [ ] Pack bags\n"));
+        QVERIFY(cli.contents().startsWith("(A) Call the bank @phone due:2026-11-21 id:2\n"
+                                          "Find branch p:2\n"));
+        QVERIFY(cli.contents().contains("Book hotel +Holiday p:1\nPack bags p:1\n"));
     }
 
     void addCreatesTheFile() {
         const Cli cli;
 
         QCOMPARE(cli.run({"add", "first"}).status, 0);
-        QCOMPARE(cli.contents(), topdo::render(topdo::newTodoFile()) + "- [ ] first\n");
+        QCOMPARE(cli.contents(), QByteArray("first\n"));
     }
 
     void addKeepsOneTodoOnOneLine() {
         const Cli cli;
 
         QCOMPARE(cli.run({"add", "two\nlines"}).status, 0);
-        QVERIFY(cli.contents().endsWith("-->\n\n- [ ] two lines\n"));
+        QCOMPARE(cli.contents(), QByteArray("two lines\n"));
     }
 
     void ticksAndUnticks() {
         const Cli cli(exampleFile());
 
-        QCOMPARE(cli.run({"done", "1", "6"}).status, 0);
-        QCOMPARE(cli.run({"undone", "4"}).status, 0);
+        QCOMPARE(cli.run({"done", "1", "2"}).status, 0);
+        QCOMPARE(cli.run({"undone", "7"}).status, 0);
 
-        QVERIFY(cli.contents().startsWith("- [x] Buy milk\n"));
-        QVERIFY(cli.contents().contains("* [x] Call the bank\n"));
-        QVERIFY(cli.contents().contains("  - [ ] Book flight\n"));
+        const QString contents = QString::fromUtf8(cli.contents());
+        QVERIFY(contents.startsWith("x " + today() +
+                                    " Call the bank @phone due:2026-11-21 pri:A\n"
+                                    "x " +
+                                    today() + " Buy milk\n"));
+        QVERIFY(contents.endsWith("\n(B) Renew passport\n"));
     }
 
     void editsText() {
         const Cli cli(exampleFile());
 
-        QCOMPARE(cli.run({"edit", "2", "Write", "the", "report"}).status, 0);
+        QCOMPARE(cli.run({"edit", "6", "Write", "the", "report"}).status, 0);
 
-        QVERIFY(cli.contents().contains("\n- [ ] Write the report\n"));
+        QVERIFY(cli.contents().contains("\n2026-11-18 Write the report\n"));
     }
 
     // Numbers refer to the list before the command: removing 3 (with its subtasks 4 and 5)
@@ -214,11 +208,9 @@ class TestCli : public QObject {
 
         const Result list = cli.run({"list", "--all"});
         QCOMPARE(list.out,
-                 QString("1  - [ ] Buy milk\n"
-                         "## Work\n"
-                         "2  - [ ] Write report due:2026-11-21\n"
-                         "## Home\n"
-                         "3  * [ ] Call the bank\n"));
+                 QString("1  (A) Call the bank @phone due:2026-11-21\n"
+                         "2  Buy milk\n"
+                         "3  2026-11-18 Write report +Work\n"));
     }
 
     void changesNothingOnABadArgument_data() {
@@ -228,8 +220,6 @@ class TestCli : public QObject {
         QTest::newRow("number too high") << QStringList{"done", "2", "9"} << "topdo: no todo 9\n";
         QTest::newRow("zero") << QStringList{"rm", "0"} << "topdo: no todo 0\n";
         QTest::newRow("not a number") << QStringList{"undone", "x"} << "topdo: no todo x\n";
-        QTest::newRow("unknown section")
-            << QStringList{"add", "a", "--section", "Garden"} << "topdo: no section \"Garden\"\n";
         QTest::newRow("no todo to add under")
             << QStringList{"add", "a", "--under", "9"} << "topdo: no todo 9\n";
     }

@@ -18,6 +18,21 @@ QString expandHome(const QString &path) {
     return path;
 }
 
+// Writes the manual next to a new todo file, unless the folder has a README.md already. A manual
+// that can't be written is no reason to fail the save.
+void writeManual(const QString &dir) {
+    const QString path = dir + u"/README.md";
+    if (QFile::exists(path)) {
+        return;
+    }
+    QSaveFile file(path);
+    if (!file.open(QIODevice::WriteOnly)) {
+        return;
+    }
+    file.write(manualText().toUtf8());
+    file.commit();
+}
+
 } // namespace
 
 QString defaultConfigFile() {
@@ -32,12 +47,12 @@ QString configuredDir(const QString &configFile) {
     return expandHome(dir);
 }
 
-QString todoFilePath(const QString &dir) { return dir + u"/todo.md"; }
+QString todoFilePath(const QString &dir) { return dir + u"/todo.txt"; }
 
 std::expected<Document, QString> load(const QString &path) {
     QFile file(path);
     if (!file.exists()) {
-        return newTodoFile();
+        return Document{};
     }
     if (!file.open(QIODevice::ReadOnly)) {
         return std::unexpected(QStringLiteral("cannot read %1: %2").arg(path, file.errorString()));
@@ -50,6 +65,7 @@ std::expected<void, QString> save(const QString &path, const Document &document)
     if (!QDir().mkpath(dir)) {
         return std::unexpected(QStringLiteral("cannot create folder %1").arg(dir));
     }
+    const bool creating = !QFile::exists(path);
     QSaveFile file(path);
     if (!file.open(QIODevice::WriteOnly)) {
         return std::unexpected(QStringLiteral("cannot write %1: %2").arg(path, file.errorString()));
@@ -57,6 +73,9 @@ std::expected<void, QString> save(const QString &path, const Document &document)
     file.write(render(document));
     if (!file.commit()) {
         return std::unexpected(QStringLiteral("cannot write %1: %2").arg(path, file.errorString()));
+    }
+    if (creating) {
+        writeManual(dir);
     }
     return {};
 }

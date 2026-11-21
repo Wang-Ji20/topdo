@@ -16,7 +16,7 @@ Item {
     TodoModel {
         id: todoModel
 
-        path: "/nonexistent/topdo-test/todo.md" // a missing file reads as an empty list
+        path: "/nonexistent/topdo-test/todo.txt" // a missing file reads as an empty list
     }
 
     RowLayout {

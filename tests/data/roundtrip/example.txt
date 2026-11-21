@@ -1,0 +1,7 @@
+(A) Call the bank @phone due:2026-11-21
+Buy milk
+Plan trip +Holiday id:1
+x 2026-11-20 Book flight +Holiday p:1
+Book hotel +Holiday p:1
+2026-11-18 Write report +Work
+x 2026-11-19 Renew passport pri:B

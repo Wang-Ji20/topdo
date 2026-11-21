@@ -4,15 +4,16 @@ A todo list for the KDE Plasma desktop. A badge in the middle of the top bar
 shows how many todos are open; clicking it opens a popup to add, tick off and
 edit them.
 
-The list is a plain Markdown file that you can also edit in any text editor.
+The list is a plain [todo.txt](https://github.com/todotxt/todo.txt) file that
+you can also edit in any text editor or todo.txt app.
 A command-line tool, `topdo`, and an MCP server for AI assistants read and
 edit the same file.
 
 ```
-~/Documents/todo/todo.md     top bar              popup
-- [ ] Write report      ->   ● Write report · 3   [ add a todo...      ]
-- [ ] Call the bank                               [ ] Write report
-- [x] Renew passport                              [ ] Call the bank
+~/Documents/todo/todo.txt         top bar              popup
+Write report +Work           ->   ● Write report · 2   [ add a todo...      ]
+(A) Call the bank @phone                               [ ] Call the bank
+x 2026-11-20 Renew passport                            [ ] Write report
 ```
 
 topdo is at an early stage: see [PLAN.md](PLAN.md) for current work and

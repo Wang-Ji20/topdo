@@ -3,35 +3,38 @@
 // The line rules of docs/design/format.md, shared by todos.cpp and edits.cpp. Internal to core.
 
 #include <QString>
+#include <QStringList>
 
+#include <functional>
 #include <optional>
 
 namespace topdo {
 
-// A line of the form "- [ ] text", with the positions that edits need.
+// A todo line split into its parts, rules 2 and 3. joinTodoLine(splitTodoLine(line)) == line for
+// every line that isn't blank.
 struct TodoLine {
-    int indent = 0;           // in columns; a tab counts as four
-    qsizetype markColumn = 0; // index of the character between the brackets
-    qsizetype textColumn = 0; // index where the text starts
     bool done = false;
+    std::optional<QChar> priority;    // open todos only: the letter of "(A) "
+    std::optional<QString> completed; // done todos only: the date after "x "
+    std::optional<QString> created;   // the creation date, as written
     QString text;
 };
 
-std::optional<TodoLine> matchTodoLine(const QString &line);
-
-// The title of a "# Heading" line, or nothing if the line isn't one.
-std::optional<QString> headingTitle(const QString &line);
-
-bool isFence(const QString &line);
-
-// Whether a line opens a comment ("<!--") that it doesn't also close ("-->").
-bool opensComment(const QString &line);
-
-bool closesComment(const QString &line);
-
 bool isBlank(const QString &line);
 
-// Indentation in columns; a tab counts as four spaces.
-int indentation(const QString &line);
+// The parts of a line that isn't blank.
+TodoLine splitTodoLine(const QString &line);
+
+QString joinTodoLine(const TodoLine &todo);
+
+// The value of the first "key:value" word of the text, if it has one.
+std::optional<QString> tagValue(const QString &text, const QString &key);
+
+// The text without the words for which `drop` returns true. Words are separated by spaces and tabs;
+// the remaining ones are joined with single spaces.
+QString withoutWords(const QString &text, const std::function<bool(const QString &)> &drop);
+
+// The words of the text: runs of characters without spaces or tabs.
+QStringList wordsOf(const QString &text);
 
 } // namespace topdo

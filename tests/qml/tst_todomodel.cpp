@@ -13,20 +13,13 @@ namespace {
 
 // The example in docs/design/format.md.
 QByteArray exampleFile() {
-    return "- [ ] Buy milk\n"
-           "\n"
-           "## Work\n"
-           "\n"
-           "- [ ] Write report due:2026-11-21\n"
-           "- [ ] Plan trip\n"
-           "  - [x] Book flight\n"
-           "  - [ ] Book hotel\n"
-           "  Ask about late check-in.\n"
-           "\n"
-           "## Home\n"
-           "\n"
-           "* [ ] Call the bank\n"
-           "- [x] Renew passport\n";
+    return "(A) Call the bank @phone due:2026-11-21\n"
+           "Buy milk\n"
+           "Plan trip +Holiday id:1\n"
+           "x 2026-11-20 Book flight +Holiday p:1\n"
+           "Book hotel +Holiday p:1\n"
+           "2026-11-18 Write report +Work\n"
+           "x 2026-11-19 Renew passport pri:B\n";
 }
 
 // Writes the way an editor does: a new file replaces the old one.
@@ -62,7 +55,7 @@ QStringList titles(const TodoModel &model) {
 // A todo model on a todo file in a temporary folder, checked by QAbstractItemModelTester.
 struct Fixture {
     explicit Fixture(const QByteArray &file) {
-        path = dir.filePath("todo.md");
+        path = dir.filePath("todo.txt");
         if (!file.isEmpty()) {
             writeFile(path, file);
         }
@@ -81,19 +74,24 @@ class TestTodoModel : public QObject {
     Q_OBJECT
 
   private Q_SLOTS:
+    // By project, then in file order.
     void listsOpenTodos() {
         const Fixture fixture(exampleFile());
         const TodoModel &model = fixture.model;
 
-        QCOMPARE(
-            titles(model),
-            (QStringList{"Buy milk", "Write report", "Plan trip", "Book hotel", "Call the bank"}));
+        QCOMPARE(titles(model),
+                 (QStringList{"Call the bank @phone",
+                              "Buy milk",
+                              "Plan trip +Holiday",
+                              "Book hotel +Holiday",
+                              "Write report +Work"}));
         QCOMPARE(role(model, 3, TodoModel::NumberRole), 5);
         QCOMPARE(role(model, 3, TodoModel::DepthRole), 1);
-        QCOMPARE(role(model, 3, TodoModel::SectionRole), "Work");
-        QCOMPARE(role(model, 1, TodoModel::TextRole), "Write report due:2026-11-21");
-        QCOMPARE(role(model, 1, TodoModel::DueRole), QDate(2026, 11, 21));
-        QVERIFY(!role(model, 0, TodoModel::DueRole).isValid());
+        QCOMPARE(role(model, 3, TodoModel::SectionRole), "Holiday");
+        QCOMPARE(role(model, 0, TodoModel::SectionRole), "");
+        QCOMPARE(role(model, 0, TodoModel::TextRole), "Call the bank @phone due:2026-11-21");
+        QCOMPARE(role(model, 0, TodoModel::DueRole), QDate(2026, 11, 21));
+        QVERIFY(!role(model, 1, TodoModel::DueRole).isValid());
         QCOMPARE(model.openCount(), 4);
         QCOMPARE(model.doneCount(), 2);
         QCOMPARE(model.totalCount(), 7);
@@ -107,13 +105,13 @@ class TestTodoModel : public QObject {
         model.setShowDone(true);
         QCOMPARE(model.rowCount(), 7);
         model.setFilter("BOOK");
-        QCOMPARE(titles(model), (QStringList{"Book flight", "Book hotel"}));
+        QCOMPARE(titles(model), (QStringList{"Book flight +Holiday", "Book hotel +Holiday"}));
     }
 
     void picksTheNextTodo() {
         const QDate today = QDate::currentDate();
         const QByteArray yesterday = today.addDays(-1).toString(Qt::ISODate).toUtf8();
-        const Fixture fixture("- [ ] first\n- [ ] late due:" + yesterday + "\n");
+        const Fixture fixture("first\nlate due:" + yesterday + "\n");
 
         QCOMPARE(fixture.model.nextTitle(), "late");
         QCOMPARE(fixture.model.nextDue(), today.addDays(-1));
@@ -123,25 +121,27 @@ class TestTodoModel : public QObject {
     void editsTheFile() {
         Fixture fixture(exampleFile());
         TodoModel &model = fixture.model;
+        const QByteArray today = QDate::currentDate().toString(Qt::ISODate).toUtf8();
 
         model.add("Pay\nrent");
-        model.setDone(1, true);
-        model.setText(2, "Pay the rent");
-        model.remove(4); // Plan trip, with its subtasks and note
+        model.setDone(2, true);
+        model.setText(8, "Pay the rent");
+        model.remove(3); // Plan trip, with its subtasks
+        model.addSubtask(1, "Find the branch");
 
         QCOMPARE(readFile(fixture.path),
-                 QByteArray("- [x] Buy milk\n"
-                            "- [ ] Pay the rent\n"
-                            "\n"
-                            "## Work\n"
-                            "\n"
-                            "- [ ] Write report due:2026-11-21\n"
-                            "\n"
-                            "## Home\n"
-                            "\n"
-                            "* [ ] Call the bank\n"
-                            "- [x] Renew passport\n"));
-        QCOMPARE(titles(model), (QStringList{"Pay the rent", "Write report", "Call the bank"}));
+                 QByteArray("(A) Call the bank @phone due:2026-11-21 id:1\n"
+                            "Find the branch p:1\n"
+                            "x " +
+                            today +
+                            " Buy milk\n"
+                            "2026-11-18 Write report +Work\n"
+                            "x 2026-11-19 Renew passport pri:B\n"
+                            "Pay the rent\n"));
+        QCOMPARE(
+            titles(model),
+            (QStringList{
+                "Call the bank @phone", "Find the branch", "Pay the rent", "Write report +Work"}));
     }
 
     // Undo puts removed todos back, the latest first, and a stale number leaves nothing to undo.
@@ -151,12 +151,12 @@ class TestTodoModel : public QObject {
 
         model.remove(99);
         QVERIFY(!model.canUndoRemove());
-        model.remove(3); // Plan trip, with its subtasks and note
-        model.remove(1); // Buy milk
+        model.remove(3); // Plan trip, with its subtasks
+        model.remove(1); // Call the bank
         QVERIFY(model.canUndoRemove());
 
         model.undoRemove();
-        QVERIFY(readFile(fixture.path).startsWith("- [ ] Buy milk\n"));
+        QVERIFY(readFile(fixture.path).startsWith("(A) Call the bank"));
         model.undoRemove();
         QCOMPARE(readFile(fixture.path), exampleFile());
         QVERIFY(!model.canUndoRemove());
@@ -180,7 +180,7 @@ class TestTodoModel : public QObject {
         QCOMPARE(fixture.model.rowCount(), 0);
         fixture.model.add("first");
 
-        QCOMPARE(readFile(fixture.path), topdo::render(topdo::newTodoFile()) + "- [ ] first\n");
+        QCOMPARE(readFile(fixture.path), QByteArray("first\n"));
         QCOMPARE(fixture.model.rowCount(), 1);
     }
 
@@ -188,10 +188,10 @@ class TestTodoModel : public QObject {
     void followsTheFileOnDisk() {
         Fixture fixture(exampleFile());
 
-        writeFile(fixture.path, "- [ ] from an editor\n");
+        writeFile(fixture.path, "from an editor\n");
         QTRY_COMPARE(titles(fixture.model), QStringList{"from an editor"});
 
-        writeFile(fixture.path, "- [ ] and again\n");
+        writeFile(fixture.path, "and again\n");
         QTRY_COMPARE(titles(fixture.model), QStringList{"and again"});
     }
 
