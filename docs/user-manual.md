@@ -91,6 +91,7 @@ topdo list                         # open todos, numbered, with the headings
 topdo list --all                   # done todos too
 topdo add Pay rent due:2026-12-01  # add a todo after the first run of todos
 topdo add Water plants --section Home
+topdo add Book hotel --under 3     # add a subtask of todo 3
 topdo done 2 5                     # tick todos 2 and 5
 topdo undone 2                     # untick todo 2
 topdo edit 3 Call the bank today   # replace the text of todo 3

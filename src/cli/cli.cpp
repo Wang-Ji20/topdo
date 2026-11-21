@@ -23,6 +23,7 @@ struct Request {
     QStringList arguments;
     bool all = false;
     std::optional<QString> section;
+    std::optional<QString> under; // add: the number of the todo to add a subtask to
 };
 
 // A change to the todo file that can fail, for example on a number that isn't a todo.
@@ -125,7 +126,7 @@ Edit eachTodo(const QStringList &numbers,
     };
 }
 
-Edit addEdit(const QString &text, const std::optional<QString> &section) {
+Edit addToSection(const QString &text, const std::optional<QString> &section) {
     return [=](const Document &document) -> std::expected<Document, QString> {
         if (!section) {
             return addTodo(document, text, std::nullopt);
@@ -137,6 +138,13 @@ Edit addEdit(const QString &text, const std::optional<QString> &section) {
         }
         return addTodo(document, text, found - list.sections.begin());
     };
+}
+
+Edit addUnder(const QString &text, const QString &number) {
+    const auto addSubtaskTo = [text](const Document &document, qsizetype todo) {
+        return addSubtask(document, todo, text);
+    };
+    return eachTodo({number}, addSubtaskTo);
 }
 
 // The words of a todo's text, joined with spaces. Line breaks become spaces too, so that one todo
@@ -165,7 +173,13 @@ int runCommand(const QString &command,
         if (text.isEmpty()) {
             return usageError(parser, QStringLiteral("add needs the todo's text"), err);
         }
-        return editCommand(request, addEdit(text, request.section), err);
+        if (request.under && request.section) {
+            return usageError(
+                parser, QStringLiteral("add takes --section or --under, not both"), err);
+        }
+        const Edit edit =
+            request.under ? addUnder(text, *request.under) : addToSection(text, request.section);
+        return editCommand(request, edit, err);
     }
     const bool numbered = command == u"done" || command == u"undone" || command == u"rm";
     if (numbered && arguments.isEmpty()) {
@@ -224,6 +238,9 @@ int runCli(const QStringList &arguments, QTextStream &out, QTextStream &err) {
     parser.addOption({QStringLiteral("section"),
                       QStringLiteral("add: add to this section."),
                       QStringLiteral("heading")});
+    parser.addOption({QStringLiteral("under"),
+                      QStringLiteral("add: add as a subtask of this todo."),
+                      QStringLiteral("n")});
     if (!parser.parse(arguments)) {
         return usageError(parser, parser.errorText(), err);
     }
@@ -239,6 +256,7 @@ int runCli(const QStringList &arguments, QTextStream &out, QTextStream &err) {
         .arguments = positional,
         .all = parser.isSet("all"),
         .section = parser.isSet("section") ? std::optional(parser.value("section")) : std::nullopt,
+        .under = parser.isSet("under") ? std::optional(parser.value("under")) : std::nullopt,
     };
     return runCommand(command, request, parser, out, err);
 }

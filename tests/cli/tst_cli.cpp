@@ -132,6 +132,9 @@ class TestCli : public QObject {
             << QStringList{"frobnicate"} << "topdo: unknown command \"frobnicate\"";
         QTest::newRow("unknown option")
             << QStringList{"list", "--bogus"} << "topdo: Unknown option 'bogus'.";
+        QTest::newRow("section and under")
+            << QStringList{"add", "a", "--section", "Home", "--under", "1"}
+            << "topdo: add takes --section or --under, not both";
     }
 
     void rejectsUnknownCommandsAndOptions() {
@@ -156,6 +159,16 @@ class TestCli : public QObject {
         QCOMPARE(second.status, 0);
         QVERIFY(cli.contents().startsWith("- [ ] Buy milk\n- [ ] Pay rent due:2026-12-01\n"));
         QVERIFY(cli.contents().contains("- [x] Renew passport\n- [ ] Water plants\n"));
+    }
+
+    void addsSubtasks() {
+        const Cli cli(exampleFile());
+
+        QCOMPARE(cli.run({"add", "--under", "3", "Pack", "bags"}).status, 0);
+        QCOMPARE(cli.run({"add", "Get", "milk", "--under", "1"}).status, 0);
+
+        QVERIFY(cli.contents().startsWith("- [ ] Buy milk\n  - [ ] Get milk\n"));
+        QVERIFY(cli.contents().contains("  Ask about late check-in.\n  - [ ] Pack bags\n"));
     }
 
     void addCreatesTheFile() {
@@ -216,6 +229,8 @@ class TestCli : public QObject {
         QTest::newRow("not a number") << QStringList{"undone", "x"} << "topdo: no todo x\n";
         QTest::newRow("unknown section")
             << QStringList{"add", "a", "--section", "Garden"} << "topdo: no section \"Garden\"\n";
+        QTest::newRow("no todo to add under")
+            << QStringList{"add", "a", "--under", "9"} << "topdo: no todo 9\n";
     }
 
     void changesNothingOnABadArgument() {

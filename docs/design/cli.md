@@ -40,6 +40,7 @@ $ $EDITOR "$(topdo path)"
 | `topdo list --all` | also prints the done todos |
 | `topdo add <text>...` | adds a todo; the words are joined with spaces |
 | `topdo add <text>... --section <name>` | adds it to the section with that heading |
+| `topdo add <text>... --under <n>` | adds it as the last subtask of todo n |
 | `topdo done <n>...` | ticks todos |
 | `topdo undone <n>...` | unticks todos |
 | `topdo edit <n> <text>...` | replaces a todo's text |
@@ -67,6 +68,7 @@ $ $EDITOR "$(topdo path)"
 |---|---|---|
 | A number that isn't a todo | `topdo: no todo 9` | 1 |
 | A section that doesn't exist | `topdo: no section "Garden"` | 1 |
+| `--section` and `--under` together | the usage text | 2 |
 | The file can't be read or written | the store's message, e.g. `topdo: cannot write /path/todo.md: ...` | 1 |
 | Unknown command or option | the usage text | 2 |
 
