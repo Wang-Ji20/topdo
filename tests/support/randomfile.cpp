@@ -58,7 +58,7 @@ QByteArray randomLine(QRandomGenerator &random) {
     case 2:
         return randomHeading(random);
     case 3:
-        return pick(random, {"```", "~~~", "```md", "    code"});
+        return pick(random, {"```", "~~~", "```md", "    code", "<!--", "-->", "<!-- note -->"});
     case 4:
         return pick(random, {"", "", "   "});
     default:

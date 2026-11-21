@@ -61,10 +61,16 @@ tell what topdo sees by looking at each line.
    paragraphs, blank lines and notes. Lines between two code fences (lines
    starting with ```` ``` ```` or `~~~`) are always other lines, even when
    they look like todos.
+3. **A comment is skipped:** outside code fences, a line that starts
+   with `<!--` (after optional indentation) opens it, and the first `-->`
+   after that, on the same line or a later one, closes it. Every line from
+   the opener to the closer is an other line.
+   A new todo file starts with such a comment (see "Where the file
+   lives"); Markdown viewers hide it.
 
 ### Structure
 
-3. **A subtask is a todo indented more than the todo above it.** Its
+4. **A subtask is a todo indented more than the todo above it.** Its
    parent is the nearest todo above it with less indentation. Only blank
    lines and lines indented more than the parent may come between them; any
    other line, or a heading, ends the nesting. So a todo's subtasks are
@@ -73,25 +79,25 @@ tell what topdo sees by looking at each line.
    - Ticking a todo doesn't tick its subtasks, and ticking all subtasks
      doesn't tick their parent.
    - The badge counts only open top-level todos.
-4. **A heading starts a section** named by the heading's text. Only ATX
+5. **A heading starts a section** named by the heading's text. Only ATX
    headings count: `#` to `######` and a space at the start of a line,
    outside code fences. Todos before
    the first heading belong to an unnamed section.
-5. **A due date is a `due:YYYY-MM-DD` word** in the todo's text, separated
+6. **A due date is a `due:YYYY-MM-DD` word** in the todo's text, separated
    from other words by spaces. The popup shows it as a date and leaves it
    out of the title. A word that isn't a valid date is plain text. If a
    todo has several, the first one counts.
 
 ### Edits
 
-6. **An edit touches only its own lines.**
+7. **An edit touches only its own lines.**
    - Ticking or unticking changes only the character between the brackets:
      a space becomes `x`; `x` or `X` becomes a space. The list marker stays.
    - Editing the text replaces only the text after the checkbox.
    - Removing deletes the todo's line and the lines indented more than it
      below it (its subtasks and notes), including blank lines between them.
      Blank lines after the last indented line stay.
-7. **New todos are written as `- [ ] text`** and go:
+8. **New todos are written as `- [ ] text`** and go:
    - into a given section: after the last line of that section's first run
      of todos, or right after the heading if the section has none (at the
      top of the file for the unnamed section);
@@ -104,9 +110,9 @@ tell what topdo sees by looking at each line.
 
    A run of todos is a todo, its indented lines, and the todos that follow
    directly, with no blank or other line between them.
-8. **Done todos stay where they are.** The popup collapses them into a
+9. **Done todos stay where they are.** The popup collapses them into a
    "Done" group; the file doesn't change.
-9. **The file is UTF-8 text with `\n` line endings.** topdo also reads
+10. **The file is UTF-8 text with `\n` line endings.** topdo also reads
    `\r\n` endings and a byte order mark, but always writes `\n`, no byte
    order mark, and a final newline. The content of each line stays as
    written.
@@ -135,6 +141,7 @@ tell what topdo sees by looking at each line.
 | New todos at the end of the first run of todos | At the end of the file: they can land below unrelated notes |
 | A new subtask copies its siblings' indentation | A fixed indentation: a file indented with four spaces would mix in two |
 | Nested todos are subtasks | A flat list: loses the structure the user wrote |
+| HTML comments are other lines | Read todos inside them: the preamble's examples would show as todos |
 | Simple line rules | Follow CommonMark exactly (lazy lines, list item content columns): hundreds of lines of rules nobody can predict by looking at the file |
 | Headings are sections | One flat list: no place to keep work and home todos apart |
 | `due:YYYY-MM-DD` | Obsidian Tasks' `📅 2026-11-21`: awkward to type in a terminal |

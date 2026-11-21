@@ -178,6 +178,28 @@ class TestTodos : public QObject {
         QCOMPARE(list.sections.size(), 1);
     }
 
+    void skipsComments() {
+        const TodoList list = todosIn({
+            "<!--",
+            "- [ ] in a comment",
+            "# not a heading",
+            "-->",
+            "- [ ] a", // 4
+            "<!-- one line --> - [ ] b",
+            "  <!-- opens",
+            "- [ ] in a comment -->",
+            "```",
+            "<!-- in a fence: no comment",
+            "```",
+            "- [ ] c", // 11
+        });
+
+        QCOMPARE(list.todos.size(), 2);
+        QCOMPARE(list.todos.at(0).line, 4);
+        QCOMPARE(list.todos.at(1).line, 11);
+        QCOMPARE(list.sections.size(), 1);
+    }
+
     void needsSpaceAfterHashes() {
         const TodoList list = todosIn({"#hashtag", "####### seven", "### Three ###"});
 

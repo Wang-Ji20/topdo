@@ -55,7 +55,7 @@ Three small functions in `query.h` decide what the widget shows:
 `filterTodos` (the todos the panel lists for a filter text), `nextTodo` (the
 todo on the badge: late, then due today, then the first open one) and
 `depthOf` (how deep a subtask is nested). The rules for where each edit acts are in
-[design/format.md](design/format.md), rules 6 to 8. The line rules that
+[design/format.md](design/format.md), rules 7 to 9. The line rules that
 both `findTodos` and the edits use live in one place, `todoline.h`.
 
 **store** owns the file on disk and the config file. It holds no state:

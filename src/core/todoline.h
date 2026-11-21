@@ -24,6 +24,11 @@ std::optional<QString> headingTitle(const QString &line);
 
 bool isFence(const QString &line);
 
+// Whether a line opens a comment ("<!--") that it doesn't also close ("-->").
+bool opensComment(const QString &line);
+
+bool closesComment(const QString &line);
+
 bool isBlank(const QString &line);
 
 // Indentation in columns; a tab counts as four spaces.

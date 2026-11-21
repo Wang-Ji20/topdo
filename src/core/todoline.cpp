@@ -31,6 +31,13 @@ bool isFence(const QString &line) {
     return trimmed.startsWith(u"```") || trimmed.startsWith(u"~~~");
 }
 
+bool opensComment(const QString &line) {
+    const QString trimmed = line.trimmed();
+    return trimmed.startsWith(u"<!--") && !trimmed.sliced(4).contains(u"-->");
+}
+
+bool closesComment(const QString &line) { return line.contains(u"-->"); }
+
 std::optional<QString> headingTitle(const QString &line) {
     static const QRegularExpression heading(QStringLiteral("^#{1,6} (.*)$"));
     const QRegularExpressionMatch match = heading.match(line);

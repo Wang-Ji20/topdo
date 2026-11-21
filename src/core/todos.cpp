@@ -51,8 +51,18 @@ TodoList findTodos(const Document &document) {
     TodoList list{.sections = {Section{}}, .todos = {}};
     QList<Ancestor> ancestors;
     bool inFence = false;
+    bool inComment = false;
     for (qsizetype i = 0; i < document.lines.size(); ++i) {
         const QString &line = document.lines.at(i);
+        if (inComment) {
+            inComment = !closesComment(line);
+            continue;
+        }
+        if (!inFence && opensComment(line)) {
+            inComment = true;
+            popToParent(ancestors, indentation(line)); // like a note
+            continue;
+        }
         if (isFence(line)) {
             inFence = !inFence;
             popToParent(ancestors, indentation(line));

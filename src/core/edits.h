@@ -9,7 +9,7 @@
 
 namespace topdo {
 
-// Edits of a todo file; see docs/design/format.md, rules 6 to 8. Each takes a document and returns
+// Edits of a todo file; see docs/design/format.md, rules 7 to 9. Each takes a document and returns
 // the edited copy. `todo` is an index into findTodos(document).todos, and `section` an index into
 // findTodos(document).sections. Text is a single line, without "\n".
 

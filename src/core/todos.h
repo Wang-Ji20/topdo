@@ -19,7 +19,7 @@ struct Section {
     friend bool operator==(const Section &, const Section &) = default;
 };
 
-// A todo line; see docs/design/format.md, rules 1 to 5.
+// A todo line; see docs/design/format.md, rules 1 to 6.
 struct Todo {
     qsizetype line = 0;    // index in Document::lines
     qsizetype parent = -1; // index in TodoList::todos; -1 for a top-level todo
