@@ -12,6 +12,10 @@ struct Document {
     friend bool operator==(const Document &, const Document &) = default;
 };
 
+// What a new todo file starts as: a comment that topdo skips, which teaches the format by example,
+// and a blank line after it. See docs/design/format.md, "Where the file lives".
+Document newTodoFile();
+
 // Reads a UTF-8 todo file. Accepts "\n" and "\r\n" line endings.
 Document parse(const QByteArray &bytes);
 

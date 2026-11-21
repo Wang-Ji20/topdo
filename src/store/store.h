@@ -19,7 +19,8 @@ QString configuredDir(const QString &configFile);
 // The todo file in a todo folder.
 QString todoFilePath(const QString &dir);
 
-// Reads a todo file. A missing file reads as an empty document; the first save creates it.
+// Reads a todo file. A missing file reads as newTodoFile(), with no todos; the first save
+// creates it.
 std::expected<Document, QString> load(const QString &path);
 
 // Writes a todo file, creating its folder if needed. The write is atomic: after a crash the file

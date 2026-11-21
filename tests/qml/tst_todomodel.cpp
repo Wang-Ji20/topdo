@@ -180,7 +180,7 @@ class TestTodoModel : public QObject {
         QCOMPARE(fixture.model.rowCount(), 0);
         fixture.model.add("first");
 
-        QCOMPARE(readFile(fixture.path), QByteArray("- [ ] first\n"));
+        QCOMPARE(readFile(fixture.path), topdo::render(topdo::newTodoFile()) + "- [ ] first\n");
         QCOMPARE(fixture.model.rowCount(), 1);
     }
 

@@ -62,7 +62,7 @@ both `findTodos` and the edits use live in one place, `todoline.h`.
 
 | Function | Does |
 |---|---|
-| `load(path)` | reads the todo file; a missing file is an empty document |
+| `load(path)` | reads the todo file; a missing file reads as `newTodoFile()`, the preamble |
 | `save(path, document)` | writes it atomically (`QSaveFile`), creating the folder |
 | `update(path, change)` | `load`, apply an edit from core, `save` if anything changed |
 | `configuredDir(configFile)` | the todo folder from `~/.config/topdo/topdo.conf` |

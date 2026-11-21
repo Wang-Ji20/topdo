@@ -1,4 +1,5 @@
 #include "cli.h"
+#include "document.h"
 
 #include <QFile>
 #include <QTemporaryDir>
@@ -175,14 +176,14 @@ class TestCli : public QObject {
         const Cli cli;
 
         QCOMPARE(cli.run({"add", "first"}).status, 0);
-        QCOMPARE(cli.contents(), QByteArray("- [ ] first\n"));
+        QCOMPARE(cli.contents(), topdo::render(topdo::newTodoFile()) + "- [ ] first\n");
     }
 
     void addKeepsOneTodoOnOneLine() {
         const Cli cli;
 
         QCOMPARE(cli.run({"add", "two\nlines"}).status, 0);
-        QCOMPARE(cli.contents(), QByteArray("- [ ] two lines\n"));
+        QVERIFY(cli.contents().endsWith("-->\n\n- [ ] two lines\n"));
     }
 
     void ticksAndUnticks() {

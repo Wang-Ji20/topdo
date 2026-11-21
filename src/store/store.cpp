@@ -37,7 +37,7 @@ QString todoFilePath(const QString &dir) { return dir + u"/todo.md"; }
 std::expected<Document, QString> load(const QString &path) {
     QFile file(path);
     if (!file.exists()) {
-        return Document{};
+        return newTodoFile();
     }
     if (!file.open(QIODevice::ReadOnly)) {
         return std::unexpected(QStringLiteral("cannot read %1: %2").arg(path, file.errorString()));

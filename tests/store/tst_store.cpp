@@ -1,5 +1,6 @@
 #include "edits.h"
 #include "store.h"
+#include "todos.h"
 
 #include <QDir>
 #include <QFile>
@@ -34,12 +35,15 @@ class TestStore : public QObject {
     Q_OBJECT
 
   private Q_SLOTS:
-    void loadsAMissingFileAsEmpty() {
+    // A missing file reads as the preamble, which holds no todos.
+    void loadsAMissingFileAsANewOne() {
         const QTemporaryDir dir;
         const auto loaded = topdo::load(dir.filePath("todo.md"));
 
         QVERIFY(loaded);
-        QCOMPARE(*loaded, Document{});
+        QCOMPARE(*loaded, topdo::newTodoFile());
+        QVERIFY(topdo::findTodos(*loaded).todos.isEmpty());
+        QCOMPARE(topdo::findTodos(*loaded).sections.size(), 1);
     }
 
     void savesAndLoads() {

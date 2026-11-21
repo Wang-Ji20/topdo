@@ -131,7 +131,10 @@ tell what topdo sees by looking at each line.
 
 - `topdo --dir <folder>` overrides it for one command.
 - If the folder or the file doesn't exist, topdo creates it when the first
-  todo is added.
+  todo is added. A new file starts with a preamble: a comment (rule 3)
+  that shows each rule by example and links to this page, then a blank
+  line. topdo skips it, Markdown viewers hide it, and you can delete it.
+  Its text lives in `newTodoFile()` in `src/core/document.cpp`.
 
 ## Decisions and the main rejected option
 
