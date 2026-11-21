@@ -1,8 +1,8 @@
+import "../../plasmoid/package/contents/ui"
 import QtQuick
 import QtTest
 import io.github.wangji20.topdo
 import topdo.test
-import "../../plasmoid/package/contents/ui"
 
 // The open todo column, driven with keys through the whole panel, on a real todo file.
 // See docs/design/widget.md, "Panel: an expanded card".
@@ -48,16 +48,13 @@ Item {
             }
         }
 
-        function file(): string {
+        function file() : string {
             return Fixture.read(root.path);
         }
 
-        function rows(): int {
+        function rows() : int {
             return todoModel.rowCount();
         }
-
-        name: "TodoOpen"
-        when: windowShown
 
         function test_typingFilters() {
             type("BOOK");
@@ -114,6 +111,28 @@ Item {
             compare(panel.openColumn, -1, "then Esc goes back to the overview");
         }
 
+        function test_shiftEnterAddsASubtask() {
+            keyClick(Qt.Key_Down);
+            keyClick(Qt.Key_Down); // Plan trip
+            keyClick(Qt.Key_Return, Qt.ShiftModifier);
+            compare(panel.todoAddingSubtask, true);
+            type("Pack");
+            compare(todoModel.filter, "", "a new subtask doesn't filter");
+            keyClick(Qt.Key_Tab);
+            compare(panel.openColumn, 0, "no switching columns in the middle of a new subtask");
+            keyClick(Qt.Key_Return);
+            compare(panel.todoAddingSubtask, false);
+            verify(file().includes("  Ask about late check-in.\n  - [ ] Pack\n"), file());
+        }
+
+        function test_escapeCancelsASubtask() {
+            keyClick(Qt.Key_Return, Qt.ShiftModifier);
+            type("Pack");
+            keyClick(Qt.Key_Escape);
+            compare(panel.todoAddingSubtask, false);
+            compare(file(), root.example);
+        }
+
         function test_shiftDeleteRemovesWithSubtasks() {
             keyClick(Qt.Key_Down);
             keyClick(Qt.Key_Down); // Plan trip
@@ -146,5 +165,9 @@ Item {
             compare(panel.openColumn, 1);
             compare(todoModel.filter, "", "the overview gets the whole list back");
         }
+
+        name: "TodoOpen"
+        when: windowShown
     }
+
 }

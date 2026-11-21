@@ -77,7 +77,7 @@ overview, then closes the panel.
 │ └───────────────────────────────────────────────────┘ │
 │  1 ▢ Buy milk                                         │
 │    WORK                                               │
-│  2 ▢ Write report      ↵ tick  ⌃E edit  ⇧⌦ remove Sat│  <- highlighted row
+│  2 ▢ Write report  ↵ tick ⇧↵ subtask ⌃E edit ⇧⌦ remove│  <- highlighted row
 │  3 ▢ Plan trip                                        │
 │  5 ▢ └ Book hotel                           yesterday │
 │    ▸ done · 2                                         │
@@ -89,6 +89,8 @@ overview, then closes the panel.
   `add "what you typed"`.
 - Numbers, the same as `topdo list`, appear only here.
 - The actions appear only on the highlighted row.
+- While it edits a todo or writes a new subtask, the input line doesn't
+  filter, and Tab doesn't switch columns.
 
 | Key | Does |
 |---|---|
@@ -96,6 +98,7 @@ overview, then closes the panel.
 | ↑ ↓, Ctrl+J/K | moves the highlight |
 | Enter | ticks or unticks the highlighted todo; on the add row, adds |
 | Ctrl+Enter | adds what you typed, whatever is highlighted |
+| Shift+Enter | starts a subtask of the highlighted todo in the input line; Enter adds it, Esc cancels |
 | Ctrl+E | edits the highlighted todo in the input line; Enter saves, Esc cancels |
 | Shift+Delete | removes the highlighted todo with its subtasks |
 | Ctrl+H | shows or hides done todos |

@@ -18,6 +18,8 @@ FocusScope {
     property real fullHeight: theme.unit * 40
     // Whether the open todo column is editing a todo; the hint line follows it.
     property bool todoEditing: false
+    // Whether the open todo column is writing a new subtask; the hint line follows it.
+    property bool todoAddingSubtask: false
 
     signal closeRequested
 
@@ -199,7 +201,11 @@ FocusScope {
                                 style: theme
                                 todos: panel.todos
                                 onEditingChanged: panel.todoEditing = editing >= 0
-                                Component.onDestruction: panel.todoEditing = false
+                                onSubtaskOfChanged: panel.todoAddingSubtask = subtaskOf >= 0
+                                Component.onDestruction: {
+                                    panel.todoEditing = false;
+                                    panel.todoAddingSubtask = false;
+                                }
                             }
                         }
 
@@ -246,7 +252,10 @@ FocusScope {
                     if (panel.todoEditing) {
                         return "↵  save     esc  cancel";
                     }
-                    return "↵  tick / add     ⌃↵  add     ⌃E  edit     ⇧⌦  remove     ⌃H  done     ⇥  next column     esc  back";
+                    if (panel.todoAddingSubtask) {
+                        return "↵  add subtask     esc  cancel";
+                    }
+                    return "↵  tick / add     ⌃↵  add     ⇧↵  subtask     ⌃E  edit     ⇧⌦  remove     ⌃H  done     ⇥  next column     esc  back";
                 }
                 color: theme.dim
                 font.family: theme.mono

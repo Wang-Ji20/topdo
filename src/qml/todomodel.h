@@ -67,6 +67,7 @@ class TodoModel : public QAbstractListModel {
     [[nodiscard]] QString error() const { return m_error; }
 
     Q_INVOKABLE void add(const QString &text);
+    Q_INVOKABLE void addSubtask(int number, const QString &text);
     Q_INVOKABLE void setDone(int number, bool done);
     Q_INVOKABLE void setText(int number, const QString &text);
     Q_INVOKABLE void remove(int number);

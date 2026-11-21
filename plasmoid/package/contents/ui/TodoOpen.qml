@@ -16,9 +16,13 @@ FocusScope {
     property int highlight: 0
     // The number of the todo being edited in the input line, or -1.
     property int editing: -1
+    // The number of the todo the input line writes a new subtask for, or -1.
+    property int subtaskOf: -1
+    // Editing or writing a subtask: the input line holds text for one todo and doesn't filter.
+    readonly property bool busy: editing >= 0 || subtaskOf >= 0
 
     readonly property string typed: input.text.trim()
-    readonly property bool hasAddRow: editing < 0 && typed !== ""
+    readonly property bool hasAddRow: !busy && typed !== ""
     readonly property int rowCount: list.count + (hasAddRow ? 1 : 0)
 
     function roleAt(row: int, role: int): var {
@@ -68,6 +72,22 @@ FocusScope {
         input.clear();
     }
 
+    function startSubtask() {
+        if (column.highlight >= list.count) {
+            return;
+        }
+        column.subtaskOf = column.roleAt(column.highlight, TodoModel.NumberRole);
+        input.clear();
+    }
+
+    function stopSubtask(add: bool) {
+        if (add) {
+            column.todos.addSubtask(column.subtaskOf, input.text);
+        }
+        column.subtaskOf = -1;
+        input.clear();
+    }
+
     function remove() {
         if (column.highlight >= list.count) {
             return;
@@ -91,7 +111,7 @@ FocusScope {
     Binding {
         target: column.todos
         property: "filter"
-        value: column.editing < 0 ? column.typed : ""
+        value: column.busy ? "" : column.typed
     }
 
     Component.onDestruction: column.todos.filter = ""
@@ -129,7 +149,7 @@ FocusScope {
                 Rectangle {
                     implicitWidth: column.style.unit * 0.55
                     implicitHeight: implicitWidth
-                    radius: column.editing < 0 ? width / 2 : 0
+                    radius: column.editing < 0 ? width / 2 : 0 // a subtask is a todo: a circle
                     color: "transparent"
                     border.width: 2
                     border.color: column.style.accent
@@ -160,12 +180,24 @@ FocusScope {
                             } else {
                                 return;
                             }
+                        } else if (column.subtaskOf >= 0) {
+                            if (enter) {
+                                column.stopSubtask(true);
+                            } else if (event.key === Qt.Key_Escape) {
+                                column.stopSubtask(false);
+                            } else if (event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab) {
+                                // no switching columns in the middle of a new subtask
+                            } else {
+                                return;
+                            }
                         } else if (event.key === Qt.Key_Down || (ctrl && event.key === Qt.Key_J)) {
                             column.move(1);
                         } else if (event.key === Qt.Key_Up || (ctrl && event.key === Qt.Key_K)) {
                             column.move(-1);
                         } else if (enter && ctrl) {
                             column.add();
+                        } else if (enter && shift) {
+                            column.startSubtask();
                         } else if (enter) {
                             column.activate();
                         } else if (ctrl && event.key === Qt.Key_E) {
@@ -197,8 +229,8 @@ FocusScope {
                 }
 
                 Text {
-                    visible: column.editing >= 0
-                    text: `EDITING ${column.editing}`
+                    visible: column.busy
+                    text: column.editing >= 0 ? `EDITING ${column.editing}` : `SUBTASK OF ${column.subtaskOf}`
                     color: column.style.dim
                     font.family: column.style.mono
                     font.pixelSize: column.style.unit * 0.55
@@ -304,7 +336,7 @@ FocusScope {
 
                     Text {
                         visible: row.highlighted
-                        text: `↵ ${row.done ? "untick" : "tick"}   ⌃E edit   ⇧⌦ remove`
+                        text: `↵ ${row.done ? "untick" : "tick"}   ⇧↵ subtask   ⌃E edit   ⇧⌦ remove`
                         color: column.style.dim
                         font.family: column.style.mono
                         font.pixelSize: column.style.unit * 0.55

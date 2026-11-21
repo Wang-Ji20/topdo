@@ -126,6 +126,16 @@ void TodoModel::add(const QString &text) {
     edit([line](const Document &document) { return addTodo(document, line, std::nullopt); });
 }
 
+void TodoModel::addSubtask(int number, const QString &text) {
+    const QString line = oneLine(text);
+    if (line.isEmpty()) {
+        return;
+    }
+    editTodo(number, [line](const Document &document, qsizetype todo) {
+        return topdo::addSubtask(document, todo, line);
+    });
+}
+
 void TodoModel::setDone(int number, bool done) {
     editTodo(number, [done](const Document &document, qsizetype todo) {
         return topdo::setDone(document, todo, done);
