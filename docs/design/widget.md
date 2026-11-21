@@ -150,13 +150,17 @@ comes from is an open question.
   show at once.
 - **Centring:** the widget stands where the bar's spacer was, between the
   app menu and the tray, and takes the free space. It places the pill at
-  the screen's centre, from its own position on screen
-  (`mapToGlobal`) and the screen's geometry, and recomputes whenever its
-  width changes. The app menu stretches too (its layout ends with a
-  filler item), and the bar splits free space between stretching
+  the centre of the bar's window, which spans the screen, from its own
+  position in that window (`mapToItem(null, ...)`), and recomputes
+  whenever its width or the window's width changes. It stays out of
+  global coordinates: with a second screen to the left of the bar's,
+  `mapToGlobal` counts that screen's width but Plasma's screen geometry
+  doesn't, which pushed the pill to the left. `tests/qml/tst_badge.qml`
+  checks the centre as the app menu changes width. The app menu
+  stretches too (its layout ends with a filler item), and the bar splits free space between stretching
   widgets; the badge asks for the whole screen width as its preferred
   width, so the app menu keeps only its buttons. Checked in the real top
-  bar: the pill's centre is the screen's centre.
+  bar with one screen: the pill's centre is the screen's centre.
 - **Our own frame** (tried 2026-11-19): the badge opens a
   `PlasmaCore.Dialog` with `backgroundHints: NoBackground`, and the panel
   is drawn in QML. Without the theme's background KWin no longer blurs

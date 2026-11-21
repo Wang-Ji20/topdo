@@ -2,11 +2,11 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Layouts
-import org.kde.plasma.plasmoid
+import QtQuick.Window
 import org.kde.kirigami as Kirigami
 import io.github.wangji20.topdo
 
-// The badge: it takes the free space of the bar and draws a pill at the screen's exact centre,
+// The badge: it takes the free space of the bar and draws a pill at the bar's exact centre,
 // whatever the width of the app menu on its left and the tray on its right.
 // See docs/design/widget.md, "Badge".
 Item {
@@ -16,11 +16,12 @@ Item {
 
     signal clicked
 
-    // Places the pill at the centre of the screen, as far as the free space allows.
+    // Places the pill at the centre of the bar, as far as the free space allows. The top bar spans
+    // the screen, so that is the screen's centre. Both numbers are in the bar's own window:
+    // global coordinates don't match Plasma's screen geometry once a second screen is left of it.
     function centre() {
-        const screen = Plasmoid.containment.screenGeometry;
-        const left = badge.mapToGlobal(0, 0).x - screen.x;
-        const wanted = screen.width / 2 - left - pill.width / 2;
+        const left = badge.mapToItem(null, 0, 0).x;
+        const wanted = badge.Window.width / 2 - left - pill.width / 2;
         pill.x = Math.max(0, Math.min(wanted, badge.width - pill.width));
     }
 
@@ -32,24 +33,18 @@ Item {
     // between stretching widgets. Asking for the whole screen leaves the app menu its minimum,
     // which is exactly its buttons, and gives the badge everything else.
     Layout.fillWidth: true
-    Layout.preferredWidth: Plasmoid.containment.screenGeometry.width
+    Layout.preferredWidth: Screen.width
     Layout.fillHeight: true
     Layout.minimumWidth: Kirigami.Units.gridUnit * 6
     Component.onCompleted: centre()
     onWidthChanged: centre()
-
-    Connections {
-        function onScreenGeometryChanged() {
-            badge.centre();
-        }
-
-        target: Plasmoid.containment
-    }
+    Window.onWidthChanged: centre()
 
     // The metal edge: a gradient that is light at the top and darker below, under the fill.
     Rectangle {
         id: pill
 
+        objectName: "pill"
         anchors.verticalCenter: parent.verticalCenter
         width: Math.min(row.implicitWidth + Kirigami.Units.gridUnit, badge.width)
         height: Math.min(badge.height - Kirigami.Units.smallSpacing, row.implicitHeight + Kirigami.Units.smallSpacing * 2)
