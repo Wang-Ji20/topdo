@@ -11,6 +11,7 @@ FocusScope {
     id: panel
 
     required property TodoModel todos
+    required property ProjectModel project
     // The column picked in the overview, and the open column (-1: none).
     property int focusColumn: 0
     property int openColumn: -1
@@ -22,6 +23,8 @@ FocusScope {
     property bool todoAddingSubtask: false
 
     signal closeRequested
+    // The project column asks to show another project; main.qml remembers it.
+    signal projectPicked(string name)
 
     // Opens a column, or with -1 goes back to the overview.
     function open(column: int) {
@@ -155,7 +158,7 @@ FocusScope {
                             anchors.margins: theme.unit * 1.4
                             opacity: panel.openColumn >= 0 && panel.openColumn !== column.index ? 0.72 : 1
                             focus: panel.openColumn === column.index
-                            sourceComponent: column.index === 0 && panel.openColumn === 0 ? todoOpen : [todoOverview, projectStub, todayStub][column.index]
+                            sourceComponent: column.index === 0 && panel.openColumn === 0 ? todoOpen : [todoOverview, projectColumn, todayStub][column.index]
                             onLoaded: {
                                 if (panel.openColumn === column.index) {
                                     (item as Item).forceActiveFocus();
@@ -210,12 +213,16 @@ FocusScope {
                         }
 
                         Component {
-                            id: projectStub
+                            id: projectColumn
 
-                            ProjectStub {
+                            ProjectColumn {
+                                focus: true
                                 style: theme
+                                todos: panel.todos
+                                project: panel.project
                                 active: column.picked
                                 open: panel.openColumn === column.index
+                                onProjectPicked: name => panel.projectPicked(name)
                             }
                         }
 
@@ -245,6 +252,9 @@ FocusScope {
                 text: {
                     if (panel.openColumn < 0) {
                         return "← →  pick     1 2 3  open     ↵  open     esc  close";
+                    }
+                    if (panel.openColumn === 1) {
+                        return "↑ ↓  pick     ↵  tick     ⇞ ⇟  other project     ← → ⇥  other columns     esc  back";
                     }
                     if (panel.openColumn !== 0) {
                         return "← → ⇥  other columns     esc  back";

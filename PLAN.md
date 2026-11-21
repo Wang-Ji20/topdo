@@ -44,6 +44,6 @@ long term.
 ## Milestone 5: project and today
 
 - [x] Decide the data sources: [docs/design/project-today.md](docs/design/project-today.md).
-- [ ] Project: `core` query for a project's milestones and steps; the column; choosing the project.
+- [x] Project: `core` query for a project's milestones and steps; the column; choosing the project.
 - [ ] Today: install the calendar development packages (maintainer's approval).
 - [ ] Today: `src/calendar/` reads today's events from Akonadi; the column; the next event on the badge.

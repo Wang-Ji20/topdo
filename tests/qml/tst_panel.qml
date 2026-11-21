@@ -1,7 +1,7 @@
+import "../../plasmoid/package/contents/ui"
 import QtQuick
 import QtTest
 import io.github.wangji20.topdo
-import "../../plasmoid/package/contents/ui"
 
 // The panel's keys in the overview and with a column open; see docs/design/widget.md, "Panel".
 Item {
@@ -14,13 +14,23 @@ Item {
         path: "/nonexistent/topdo-test/todo.txt" // a missing file reads as an empty list
     }
 
+    ProjectModel {
+        id: projectModel
+
+        todos: todoModel
+    }
+
     Panel {
         id: panel
 
         width: implicitWidth
         height: implicitHeight
         todos: todoModel
+        project: projectModel
         fullHeight: 800
+        onProjectPicked: (name) => {
+            return projectModel.project = name;
+        }
     }
 
     SignalSpy {
@@ -31,9 +41,6 @@ Item {
     }
 
     TestCase {
-        name: "Panel"
-        when: windowShown
-
         function init() {
             panel.openColumn = -1;
             panel.focusColumn = 0;
@@ -91,5 +98,9 @@ Item {
             keyClick(Qt.Key_1);
             tryCompare(panel, "implicitHeight", panel.fullHeight);
         }
+
+        name: "Panel"
+        when: windowShown
     }
+
 }

@@ -32,10 +32,13 @@ Supplementary material +AidWalk id:2
 - Milestones are the project's top-level todos in file order; steps are
   their subtasks. Nothing new in the format.
 - **The current project is chosen in the panel:** in the open column,
-  ↑ ↓ (or Ctrl+J/K) cycle through the projects of the file, in the order
-  they first appear. The widget remembers the choice in its own Plasma
-  settings; with no choice yet, or a project that no longer exists, it
-  shows the first project.
+  Page Down and Page Up step through the projects of the file, in the
+  order they first appear. The widget remembers the choice in its own
+  Plasma settings (`contents/config/main.xml`); with no choice yet, or a
+  project that no longer exists, it shows the first project.
+- **Keys in the open column:** ↑ ↓ (or Ctrl+J/K) move the highlight over
+  the rows, Enter or a click ticks or unticks the highlighted milestone or
+  step. Other keys go on to the panel, as in the todo column.
 - **Every top-level todo of the project is a milestone**, with or without
   subtasks.
 

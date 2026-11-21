@@ -38,6 +38,12 @@ Window {
         path: Qt.application.arguments[Qt.application.arguments.length - 1]
     }
 
+    ProjectModel {
+        id: projectModel
+
+        todos: todoModel
+    }
+
     Panel {
         id: panel
 
@@ -46,13 +52,20 @@ Window {
         width: implicitWidth
         height: implicitHeight
         todos: todoModel
+        project: projectModel
         fullHeight: 640
+        onProjectPicked: (name) => {
+            return projectModel.project = name;
+        }
         onCloseRequested: Qt.quit()
         Component.onCompleted: {
-            const open = Qt.application.arguments.find(argument => argument.startsWith("--open="));
-            if (open) {
+            const open = Qt.application.arguments.find((argument) => {
+                return argument.startsWith("--open=");
+            });
+            if (open)
                 panel.open(Number(open.slice("--open=".length)));
-            }
+
         }
     }
+
 }

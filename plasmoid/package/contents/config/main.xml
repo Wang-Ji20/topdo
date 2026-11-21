@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The widget's own settings, kept by Plasma. See docs/design/project-today.md. -->
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0 http://www.kde.org/standards/kcfg/1.0/kcfg.xsd">
+  <kcfgfile name=""/>
+  <group name="General">
+    <!-- The project the project column shows, without its "+"; empty: the first one. -->
+    <entry name="project" type="String">
+      <default></default>
+    </entry>
+  </group>
+</kcfg>

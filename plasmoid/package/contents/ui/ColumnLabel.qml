@@ -46,4 +46,5 @@ RowLayout {
         font.pixelSize: label.style.unit * 0.55
         font.letterSpacing: label.style.unit * 0.06
     }
+
 }

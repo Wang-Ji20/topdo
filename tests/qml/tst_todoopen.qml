@@ -23,13 +23,23 @@ Item {
         path: "/nonexistent/topdo-test/todo.txt"
     }
 
+    ProjectModel {
+        id: projectModel
+
+        todos: todoModel
+    }
+
     Panel {
         id: panel
 
         width: implicitWidth
         height: implicitHeight
         todos: todoModel
+        project: projectModel
         fullHeight: 800
+        onProjectPicked: (name) => {
+            return projectModel.project = name;
+        }
     }
 
     TestCase {

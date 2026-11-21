@@ -110,12 +110,13 @@ overview, then closes the panel.
 | Tab, Shift+Tab | opens the next or previous column |
 | ← → | with an empty input, opens the previous or next column; otherwise moves the cursor |
 
-### Project (stub)
+### Project
 
-The current project: its milestones as squares, the current milestone,
-the next step and the last commit. Open, it lists every milestone with
-"done" or "now", then the next step and the last commit.
-Where this comes from is planned in [project-today.md](project-today.md).
+One `+project` of the todo file: its milestones as squares, the current
+milestone and its next step. Open, it lists every milestone with "done"
+or "now" and the current one's steps; Enter ticks, Page Up and Page Down
+pick another project. The data and the keys are in
+[project-today.md](project-today.md).
 
 ### Today (stub)
 
@@ -178,7 +179,7 @@ comes from is planned in [project-today.md](project-today.md).
   screen near an edge, as a transparent, blurred slab with our border.
 - **The panel's QML:** `Panel.qml` draws the slab, the columns and the
   hint line and handles the keys; each column is its own file
-  (`TodoOverview.qml` and, when open, `TodoOpen.qml`; `ProjectStub.qml`,
+  (`TodoOverview.qml` and, when open, `TodoOpen.qml`; `ProjectColumn.qml`,
   `TodayStub.qml`), and
   `Style.qml` holds the colours (from the Plasma theme), typefaces, sizes
   and the due-date label. The open todo column binds the model's filter
@@ -203,8 +204,8 @@ comes from is planned in [project-today.md](project-today.md).
 - **Our own frame:** a Plasma dialog without the theme's background,
   plus KWin's blur requested by the QML plugin; no layer-shell window is
   needed. See "How it is built".
-- **Project and today data:** stubs for now; their sources (for example
-  a git repository and a calendar) are milestone 5 of the roadmap.
+- **Project and today data:** decided in
+  [project-today.md](project-today.md).
 
 ## Rejected options
 

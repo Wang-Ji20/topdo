@@ -24,6 +24,14 @@ PlasmoidItem {
         id: todoModel
     }
 
+    // The project column's project, remembered in the widget's settings.
+    ProjectModel {
+        id: projectModel
+
+        todos: todoModel
+        project: Plasmoid.configuration.project
+    }
+
     // The widget's global shortcut (its settings, "Keyboard Shortcuts") opens and closes the panel.
     // Plasma would expand its own popup; topdo's panel is its own dialog.
     Connections {
@@ -67,8 +75,10 @@ PlasmoidItem {
             width: implicitWidth
             height: implicitHeight
             todos: todoModel
+            project: projectModel
             fullHeight: Plasmoid.containment.availableScreenRect.height - Kirigami.Units.gridUnit * 2
             onCloseRequested: panel.visible = false
+            onProjectPicked: name => Plasmoid.configuration.project = name
         }
     }
 }

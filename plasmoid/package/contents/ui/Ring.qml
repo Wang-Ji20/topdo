@@ -27,6 +27,7 @@ Item {
                 startAngle: 0
                 sweepAngle: 360
             }
+
         }
 
         ShapePath {
@@ -43,6 +44,9 @@ Item {
                 startAngle: -90
                 sweepAngle: 360 * ring.fraction
             }
+
         }
+
     }
+
 }
