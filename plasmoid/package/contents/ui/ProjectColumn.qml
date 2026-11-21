@@ -103,6 +103,7 @@ FocusScope {
         spacing: column.style.unit * 0.95
 
         ColumnLabel {
+            visible: !column.open // the panel's tabs show it
             Layout.fillWidth: true
             style: column.style
             number: 2

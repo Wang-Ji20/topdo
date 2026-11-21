@@ -121,14 +121,6 @@ FocusScope {
         anchors.fill: parent
         spacing: column.style.unit * 0.8
 
-        ColumnLabel {
-            Layout.fillWidth: true
-            style: column.style
-            number: 1
-            name: "Todo"
-            active: true
-        }
-
         // The input line.
         Rectangle {
             Layout.fillWidth: true

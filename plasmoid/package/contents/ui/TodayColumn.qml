@@ -36,6 +36,7 @@ ColumnLayout {
     spacing: style.unit * 0.95
 
     ColumnLabel {
+        visible: !today.open // the panel's tabs show it
         Layout.fillWidth: true
         style: today.style
         number: 3

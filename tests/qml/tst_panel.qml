@@ -59,6 +59,16 @@ Item {
             closed.clear();
         }
 
+        // Open, a column takes the whole panel; at rest the three share it.
+        function test_anOpenColumnTakesTheWholeWidth() {
+            const project = findChild(panel, "projectColumn");
+            verify(project.width < panel.width / 2);
+            panel.open(1);
+            verify(project.width > panel.width * 0.9, `width ${project.width} of ${panel.width}`);
+            panel.open(-1);
+            verify(project.width < panel.width / 2);
+        }
+
         function test_arrowsAndTabPickColumns() {
             keyClick(Qt.Key_Right);
             compare(panel.focusColumn, 1);

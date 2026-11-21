@@ -62,9 +62,10 @@ large, built from circle, square and line.
 
 ## Panel: an expanded card
 
-The open column takes about half the width, and the panel grows to the
-full height of the screen; the other two columns stay visible, narrower
-and dimmed. **Esc** steps back: it clears the input, then returns to the
+The open column takes the whole width of the panel, and the panel grows
+to the full height of the screen. A row of tabs at the top, the three
+column labels, shows that the other columns are there; a click on a tab,
+Tab or ← → open another. **Esc** steps back: it clears the input, then returns to the
 overview, then closes the panel.
 
 ### Todo
@@ -153,7 +154,7 @@ is in [project-today.md](project-today.md).
   todo list or a whole day fits.
 - **Contrast:** the glass is a lighter graphite and mostly opaque (about
   88 %), so text stays readable over any wallpaper; secondary text is a light grey, not a dim
-  one, and the narrow columns stay at about 70 % while another is open.
+  one.
 
 ## How it is built
 
