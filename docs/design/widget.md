@@ -115,7 +115,7 @@ overview, then closes the panel.
 The current project: its milestones as squares, the current milestone,
 the next step and the last commit. Open, it lists every milestone with
 "done" or "now", then the next step and the last commit.
-Where this comes from is an open question.
+Where this comes from is planned in [project-today.md](project-today.md) (draft).
 
 ### Today (stub)
 
@@ -123,7 +123,7 @@ The day's schedule: the next event with a countdown, and the day as a
 strip with a ring at the current time. Open, it shows the whole day as a
 timeline: one row per event, past ones faded, the current one in the
 accent colour, and a line at the current time. Where this
-comes from is an open question.
+comes from is planned in [project-today.md](project-today.md) (draft).
 
 ## Look
 
