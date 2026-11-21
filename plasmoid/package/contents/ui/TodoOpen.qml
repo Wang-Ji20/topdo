@@ -204,6 +204,10 @@ FocusScope {
                             column.startEditing();
                         } else if (shift && event.key === Qt.Key_Delete) {
                             column.remove();
+                        } else if (shift && event.key === Qt.Key_Backspace && input.text === "") {
+                            // For keyboards without Delete. With text typed, it deletes a character:
+                            // Shift is often still down from typing a capital.
+                            column.remove();
                         } else if (ctrl && event.key === Qt.Key_H) {
                             column.todos.showDone = !column.todos.showDone;
                         } else if (event.key === Qt.Key_Escape && input.text !== "") {

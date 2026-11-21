@@ -101,6 +101,7 @@ overview, then closes the panel.
 | Shift+Enter | starts a subtask of the highlighted todo in the input line; Enter adds it, Esc cancels |
 | Ctrl+E | edits the highlighted todo in the input line; Enter saves, Esc cancels |
 | Shift+Delete | removes the highlighted todo with its subtasks |
+| Shift+Backspace | the same, with an empty input; with text typed, deletes a character |
 | Ctrl+H | shows or hides done todos |
 | Tab, Shift+Tab | opens the next or previous column |
 | ← → | with an empty input, opens the previous or next column; otherwise moves the cursor |

@@ -142,6 +142,15 @@ Item {
             verify(file().includes("- [ ] Write report"), file());
         }
 
+        function test_shiftBackspaceRemovesOnlyWithAnEmptyInput() {
+            keyClick(Qt.Key_Backspace, Qt.ShiftModifier); // Buy milk
+            verify(!file().includes("Buy milk"), file());
+            type("Wr");
+            keyClick(Qt.Key_Backspace, Qt.ShiftModifier);
+            compare(todoModel.filter, "W", "with text, it deletes a character");
+            verify(file().includes("Write report"), file());
+        }
+
         function test_ctrlHShowsDoneTodos() {
             compare(rows(), 5);
             keyClick(Qt.Key_H, Qt.ControlModifier);
