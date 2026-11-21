@@ -10,9 +10,13 @@ Each milestone ends in something usable. Bigger scope changes go here first.
    with three cards: todo (overview, then quick-add, tick off and edit),
    project and today, the last two as stubs at first. Installed and placed
    by the dotfiles.
+3a. **todo.txt** (2026-11-21). The todo file becomes a todo.txt file, so
+   other todo.txt apps share it: subtasks by `id:`/`p:` tags, groups by
+   `+project`, a manual in the todo folder. See
+   [docs/design/format.md](docs/design/format.md).
 4. **MCP server.** `topdo mcp` offers list, add and tick-off tools to AI
    assistants.
 5. **Project and today cards with real data.** Decide where they come from
    (for example a git repository and a calendar) and fill the stubs.
-6. **Grow with use.** Candidates: due dates, sections by heading, a global
+6. **Grow with use.** Candidates: priorities in the panel, a global
    shortcut, more widgets in the popup.

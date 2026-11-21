@@ -1,126 +1,123 @@
 # The todo file format
 
-Status: Decided, 2026-11-19.
+Status: Decided, 2026-11-21. Replaces the Markdown format of 2026-11-19.
 
-The todo file is a Markdown file. topdo reads the todos out of it and changes
-only those lines; everything else in the file is the user's and stays
-untouched.
+The todo file is a [todo.txt](https://github.com/todotxt/todo.txt) file:
+one line is one todo. topdo follows the todo.txt rules, so any todo.txt
+app can read and edit the same file. A few `key:value` tags, which the
+spec leaves to apps, add due dates and subtasks.
 
 ## Example
 
-```markdown
-- [ ] Buy milk
-
-## Work
-
-- [ ] Write report due:2026-11-21
-- [ ] Plan trip
-  - [x] Book flight
-  - [ ] Book hotel
-  Ask about late check-in.
-
-## Home
-
-* [ ] Call the bank
-- [x] Renew passport
-
-Notes that are not todos stay exactly as written.
+```
+(A) Call the bank @phone due:2026-11-21
+Buy milk
+Plan trip +Holiday id:1
+x 2026-11-20 Book flight +Holiday p:1
+Book hotel +Holiday p:1
+2026-11-18 Write report +Work
+x 2026-11-19 Renew passport pri:B
 ```
 
 topdo sees this as:
 
 ```
-(unnamed section)
+(no project)
+  [ ] Call the bank @phone        due 2026-11-21
   [ ] Buy milk
-Work
-  [ ] Write report            due 2026-11-21
+  [x] Renew passport
+Holiday
   [ ] Plan trip
       [x] Book flight
       [ ] Book hotel
-Home
-  [ ] Call the bank
-  [x] Renew passport
+Work
+  [ ] Write report
 ```
-
-The note under "Plan trip" and the last paragraph are other lines: topdo
-keeps them but never shows or changes them.
 
 ## Rules
 
 ### What a todo is
 
-topdo reads the file line by line with the simple rules below. They follow
-how Markdown task lists look, but topdo doesn't implement Markdown: you can
-tell what topdo sees by looking at each line.
+1. **Every line that isn't blank is a todo.** A blank line (empty, or only
+   spaces and tabs) is kept as written but is not a todo.
+2. **A done todo starts with `x` and a space**, a lowercase `x`. Then come
+   an optional completion date and an optional creation date, each a
+   `YYYY-MM-DD` word followed by a space, then the text.
+   - `xylophone lesson`, `X 2026-01-01 Plan` and `(A) x Find tickets` are
+     open todos.
+3. **An open todo** starts with an optional priority, an uppercase letter
+   in brackets and a space (`(A) `), then an optional creation date and a
+   space, then the text.
+   - `(b) Call`, `Call (A)` and `(B)->Submit` have no priority.
+4. **The text** is the rest of the line. In it:
+   - a word that starts with `+` is a project, and one that starts with
+     `@` is a context (a word is a run of characters without spaces);
+   - a word of the form `key:value` is a tag: the key has no colon, the
+     value is at least one character, and neither has spaces.
 
-1. **A todo is a line of the form `- [ ] text`:** optional indentation, a
-   bullet (`-`, `*` or `+`), spaces, a checkbox, spaces, and the text.
-   - `[ ]` means open; `[x]` and `[X]` mean done.
-   - Numbered items (`1. [ ] text`) are not todos.
-2. **Everything else is an other line**, kept as written: headings,
-   paragraphs, blank lines and notes. Lines between two code fences (lines
-   starting with ```` ``` ```` or `~~~`) are always other lines, even when
-   they look like todos.
-3. **A comment is skipped:** outside code fences, a line that starts
-   with `<!--` (after optional indentation) opens it, and the first `-->`
-   after that, on the same line or a later one, closes it. Every line from
-   the opener to the closer is an other line.
-   A new todo file starts with such a comment (see "Where the file
-   lives"); Markdown viewers hide it.
+### Tags topdo reads
 
-### Structure
-
-4. **A subtask is a todo indented more than the todo above it.** Its
-   parent is the nearest todo above it with less indentation. Only blank
-   lines and lines indented more than the parent may come between them; any
-   other line, or a heading, ends the nesting. So a todo's subtasks are
-   exactly the todos among the indented lines under it. Subtasks can nest
-   further. A tab counts as four spaces.
+5. **`due:YYYY-MM-DD` is the due date.** A value that isn't a valid date
+   is plain text. If a todo has several, the first one counts.
+6. **`id:` and `p:` make subtasks.** A todo with `p:1` is a subtask of the
+   todo with `id:1`. Several todos can be subtasks of one parent, and
+   subtasks can have subtasks.
+   - If no todo has that id, or following the `p:` tags leads back in a
+     circle, the todo is top-level. If several todos have the same id, the
+     first one is the parent. Only a todo's first `p:` counts.
    - Ticking a todo doesn't tick its subtasks, and ticking all subtasks
      doesn't tick their parent.
    - The badge counts only open top-level todos.
-5. **A heading starts a section** named by the heading's text. Only ATX
-   headings count: `#` to `######` and a space at the start of a line,
-   outside code fences. Todos before
-   the first heading belong to an unnamed section.
-6. **A due date is a `due:YYYY-MM-DD` word** in the todo's text, separated
-   from other words by spaces. The popup shows it as a date and leaves it
-   out of the title. A word that isn't a valid date is plain text. If a
-   todo has several, the first one counts.
+7. **`pri:A` is the priority of a done todo**, as the spec suggests: it
+   keeps the priority while the todo is done.
+8. **The title is the text without the `due:`, `id:`, `p:` and `pri:`
+   tags.** The panel shows the title; projects and contexts stay in it.
+
+### Projects group the list
+
+9. **A todo belongs to its first project.** The panel lists the todos
+   without a project first, then one group per project, in the order each
+   project first appears in the file. Inside a group, todos keep their
+   order in the file. A subtask belongs to its own first project, like any
+   todo.
+
+### Numbers
+
+10. **Todos are numbered from 1 in file order**, open and done alike. The
+    number of a todo changes only when todos above it are added or
+    removed.
 
 ### Edits
 
-7. **An edit touches only its own lines.**
-   - Ticking or unticking changes only the character between the brackets:
-     a space becomes `x`; `x` or `X` becomes a space. The list marker stays.
-   - Editing the text replaces only the text after the checkbox.
-   - Removing deletes the todo's line and the lines indented more than it
-     below it (its subtasks and notes), including blank lines between them.
-     Blank lines after the last indented line stay.
-8. **New todos are written as `- [ ] text`** and go:
-   - into a given section: after the last line of that section's first run
-     of todos, or right after the heading if the section has none (at the
-     top of the file for the unnamed section);
-   - with no section given: after the last line of the first run of todos
-     in the file;
-   - into a file with no todos: at the end of the file;
-   - as a subtask of a todo: after the last line of that todo's block (the
-     todo and the lines indented more than it below it), indented like the
-     todo's last subtask, or two spaces more than the todo if it has none.
-
-   A run of todos is a todo, its indented lines, and the todos that follow
-   directly, with no blank or other line between them.
-9. **Done todos stay where they are.** The popup collapses them into a
-   "Done" group; the file doesn't change.
-10. **The file is UTF-8 text with `\n` line endings.** topdo also reads
-   `\r\n` endings and a byte order mark, but always writes `\n`, no byte
-   order mark, and a final newline. The content of each line stays as
-   written.
+11. **An edit touches only its own lines.** Every other line keeps its
+    content and its place.
+    - Ticking a todo writes `x`, a space, today's date and a space in front
+      of it. A priority `(A) ` moves to the end of the text as `pri:A`; the
+      creation date stays.
+    - Unticking removes the `x` and the completion date. A `pri:A` tag goes
+      back to the front as `(A) `.
+    - Editing the text replaces only the text after the priority and the
+      dates. Tags in the new text are written as given.
+    - Removing a todo deletes its line and the lines of its subtasks, their
+      subtasks, and so on.
+12. **A new todo is written as its text**, after the last line that isn't
+    blank (at the top of an empty file). Adding to a project appends
+    ` +Project` to the text unless the text already has that project.
+13. **A new subtask goes after its parent's last subtask** (after the
+    parent itself if it has none) and gets ` p:ID` with the parent's id. A
+    parent without an `id:` tag gets ` id:N` at the end of its line, with N
+    the smallest whole number from 1 that no todo uses as an id.
+14. **Done todos stay where they are.** The panel collapses them into a
+    "Done" group; the file doesn't change. topdo has no `done.txt` archive.
+15. **The file is UTF-8 text with `\n` line endings.** topdo also reads
+    `\r\n` endings and a byte order mark, but always writes `\n`, no byte
+    order mark, and a final newline. The content of each line stays as
+    written.
 
 ## Where the file lives
 
-- topdo uses `todo.md` inside a todo folder, by default `~/Documents/todo/`.
-  The folder leaves room for more files later (for example `done.md`).
+- topdo uses `todo.txt` inside a todo folder, by default
+  `~/Documents/todo/`.
 - The folder is set once in `~/.config/topdo/topdo.conf`, a plain
   `key=value` (INI) file that the widget, the CLI and the MCP server all
   read. A leading `~/` means your home folder:
@@ -131,25 +128,23 @@ tell what topdo sees by looking at each line.
 
 - `topdo --dir <folder>` overrides it for one command.
 - If the folder or the file doesn't exist, topdo creates it when the first
-  todo is added. A new file starts with a preamble: a comment (rule 3)
-  that shows each rule by example and links to this page, then a blank
-  line. topdo skips it, Markdown viewers hide it, and you can delete it.
-  Its text lives in `newTodoFile()` in `src/core/document.cpp`.
+  todo is added. todo.txt has no comments, so the file starts empty; topdo
+  also writes `README.md` into the folder, a short manual of these rules,
+  unless a file of that name is already there. Its text lives in
+  `manualText()` in `src/core/document.cpp`.
 
 ## Decisions and the main rejected option
 
 | Decision | Rejected |
 |---|---|
-| Read all bullet markers and `[X]`; write `- [ ]` and `[x]` | Only `- [ ]`: todos written with `*` would silently disappear |
-| New todos at the end of the first run of todos | At the end of the file: they can land below unrelated notes |
-| A new subtask copies its siblings' indentation | A fixed indentation: a file indented with four spaces would mix in two |
-| Nested todos are subtasks | A flat list: loses the structure the user wrote |
-| HTML comments are other lines | Read todos inside them: the preamble's examples would show as todos |
-| Simple line rules | Follow CommonMark exactly (lazy lines, list item content columns): hundreds of lines of rules nobody can predict by looking at the file |
-| Headings are sections | One flat list: no place to keep work and home todos apart |
-| `due:YYYY-MM-DD` | Obsidian Tasks' `📅 2026-11-21`: awkward to type in a terminal |
+| todo.txt | Markdown task lists (the format before 2026-11-21): no other todo apps read them, and the rules had to invent nesting, sections and comments |
+| Subtasks with `id:` and `p:` tags | Indented lines: not todo.txt, other apps misread them |
+| Group by the first project | By heading: todo.txt has none; by context: projects say what a todo is for |
+| A manual file in the folder | A comment preamble in the file: todo.txt has no comments, so other apps would show it as todos |
+| Tick writes a completion date | No date: a done todo with a creation date would then be ambiguous, which the spec warns about |
+| New todos without a creation date | Always add one: clutter for a list typed by hand |
+| New todos at the end | Sorted by priority: an add would move other lines |
+| Done todos stay in place | Move them to `done.txt`: an edit then changes more than its line |
 | One folder in a shared config file | Per-frontend settings: the widget and CLI can drift to different files |
 | An INI config file, read with Qt's `QSettings` | TOML: Qt has no parser for it, and one key doesn't need one |
-| Done todos stay in place | Move them to a `## Done` section: an edit then changes more than its line |
-| Markdown | todo.txt: no place for headings and notes; JSON: unpleasant to edit by hand |
 | Write `\n` endings and a final newline | Keep the file's own endings and byte order mark: complexity a hand-written todo file doesn't need |
