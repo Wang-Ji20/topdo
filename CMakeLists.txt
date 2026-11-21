@@ -15,6 +15,8 @@ endif()
 
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Test Quick)
 find_package(KF6WindowSystem REQUIRED)
+find_package(KF6CalendarCore REQUIRED)
+find_package(KPim6AkonadiCalendar REQUIRED)
 qt_standard_project_setup(REQUIRES 6.5)  # also includes GNUInstallDirs
 # QML modules go to build/<preset>/qml/<uri as path>/, the layout QML_IMPORT_PATH expects.
 set(QT_QML_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/qml)
@@ -23,6 +25,7 @@ enable_testing()
 
 add_subdirectory(src/core)
 add_subdirectory(src/store)
+add_subdirectory(src/calendar)
 add_subdirectory(src/cli)
 add_subdirectory(src/qml)
 add_subdirectory(tests)

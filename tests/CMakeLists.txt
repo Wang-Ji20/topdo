@@ -21,6 +21,10 @@ topdo_add_test(tst_store store/tst_store.cpp)
 topdo_add_test(tst_cli cli/tst_cli.cpp)
 topdo_add_test(tst_query core/tst_query.cpp)
 
+add_executable(tst_day calendar/tst_day.cpp)
+target_link_libraries(tst_day PRIVATE topdoday Qt6::Test)
+add_test(NAME tst_day COMMAND tst_day)
+
 # The QML module's C++ types, tested without QML.
 add_executable(tst_todomodel qml/tst_todomodel.cpp)
 target_link_libraries(tst_todomodel PRIVATE topdoqml Qt6::Test)

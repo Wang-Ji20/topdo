@@ -56,7 +56,9 @@ Supplementary material +AidWalk id:2
 KDE keeps calendars in Akonadi, the service behind KOrganizer and the
 clock's agenda; it already syncs Google calendars. topdo reads today's
 events from it, read-only, through the `akonadi-calendar` library (KDE
-PIM). Events from every calendar the user has enabled appear.
+PIM). Events from every calendar in Akonadi appear, holidays and
+birthdays included; the calendar's own selection of calendars starts
+empty, so topdo doesn't use it.
 
 | Element | Shows |
 |---|---|

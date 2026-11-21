@@ -5,12 +5,14 @@ qt_add_qml_module(topdoqml
     SOURCES
         projectmodel.cpp
         projectmodel.h
+        todaymodel.cpp
+        todaymodel.h
         todomodel.cpp
         todomodel.h
         windoweffects.cpp
         windoweffects.h
 )
-target_link_libraries(topdoqml PUBLIC topdostore Qt6::Quick PRIVATE KF6::WindowSystem)
+target_link_libraries(topdoqml PUBLIC topdostore topdocalendar Qt6::Quick PRIVATE KF6::WindowSystem)
 target_include_directories(topdoqml PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Installed in the layout of Qt's own modules: <prefix>/lib64/qt6/qml/io/github/wangji20/topdo/.

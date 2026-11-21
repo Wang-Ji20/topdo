@@ -10,7 +10,9 @@ src/core/               parse, edit and render a todo file; pure functions
         |
 src/store/              read and write the file on disk, read the config
         |
-        +-- src/qml/    exposes the store to QML as a list model
+        |   src/calendar/  today's events: pure day rules, read from Akonadi
+        |       |
+        +-- src/qml/    exposes the store and the calendar to QML
         +-- src/cli/    the `topdo` command
         +-- src/mcp/    `topdo mcp`: tools for AI assistants
 plasmoid/               the badge and popup in the top bar (QML)
@@ -73,6 +75,13 @@ elsewhere in the meantime (a text editor, a sync tool) is kept, not
 overwritten. Operations that can fail return `std::expected` with a message
 that names the file.
 
+**calendar** reads the day's events. `day.h` is pure, like core: an
+`Event` value, `happensOn`, `sortedDay`, `nextEvent` and `countdown`.
+`AkonadiCalendar` reads every calendar in Akonadi, the KDE service that
+also syncs Google calendars, read-only, and signals when they change. Only
+the QML plugin uses this layer; core, store, the CLI and the MCP server
+don't depend on it.
+
 **Frontends** translate between their world and the store, and hold no
 logic of their own:
 
@@ -85,6 +94,8 @@ logic of their own:
   number that no longer names a todo changes nothing. `ProjectModel`
   shows one project of the same `TodoModel` for the project column: its
   milestones with their steps, and the list of projects to choose from.
+  `TodayModel` offers today's events from `AkonadiCalendar`, the next
+  one and its countdown, with a clock that moves on every 30 seconds.
   `WindowEffects` asks KWin to blur behind the panel.
 - `cli` maps command-line arguments to store calls.
 - `mcp` maps MCP tool calls (JSON-RPC over standard input and output) to

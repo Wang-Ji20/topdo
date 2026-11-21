@@ -10,6 +10,7 @@ On openSUSE Tumbleweed, to build and run:
 ```sh
 sudo zypper install cmake ninja gcc-c++ \
     qt6-base-devel qt6-declarative-devel kf6-kwindowsystem-devel \
+    akonadi-calendar-devel kf6-kcalendarcore-devel \
     google-poppins-fonts jetbrains-mono-fonts
 ```
 
@@ -24,6 +25,7 @@ sudo zypper install clang qt6-declarative-tools plasma6-sdk
 | `qt6-base-devel` | Qt Core, and QTest for the tests |
 | `qt6-declarative-devel` | QML and Qt Quick, and Qt Quick Test for the QML tests |
 | `kf6-kwindowsystem-devel` | `KWindowEffects`, to ask KWin for blur behind the panel |
+| `akonadi-calendar-devel`, `kf6-kcalendarcore-devel` | Today's events from the KDE calendar (Akonadi) |
 | `google-poppins-fonts`, `jetbrains-mono-fonts` | The widget's typefaces (needed to run it, not to build) |
 | `clang` | `clang-format` and `clang-tidy` |
 | `qt6-declarative-tools` | `qmlformat` and `qmllint` |
