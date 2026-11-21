@@ -12,6 +12,8 @@ FocusScope {
 
     required property TodoModel todos
     required property ProjectModel project
+    // A TodayModel, or in tests any object with its properties.
+    required property var day
     // The column picked in the overview, and the open column (-1: none).
     property int focusColumn: 0
     property int openColumn: -1
@@ -158,7 +160,7 @@ FocusScope {
                             anchors.margins: theme.unit * 1.4
                             opacity: panel.openColumn >= 0 && panel.openColumn !== column.index ? 0.72 : 1
                             focus: panel.openColumn === column.index
-                            sourceComponent: column.index === 0 && panel.openColumn === 0 ? todoOpen : [todoOverview, projectColumn, todayStub][column.index]
+                            sourceComponent: column.index === 0 && panel.openColumn === 0 ? todoOpen : [todoOverview, projectColumn, todayColumn][column.index]
                             onLoaded: {
                                 if (panel.openColumn === column.index) {
                                     (item as Item).forceActiveFocus();
@@ -227,10 +229,12 @@ FocusScope {
                         }
 
                         Component {
-                            id: todayStub
+                            id: todayColumn
 
-                            TodayStub {
+                            TodayColumn {
                                 style: theme
+                                todos: panel.todos
+                                day: panel.day
                                 active: column.picked
                                 open: panel.openColumn === column.index
                             }

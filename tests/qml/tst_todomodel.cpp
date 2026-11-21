@@ -118,6 +118,7 @@ class TestTodoModel : public QObject {
         QCOMPARE(fixture.model.nextTitle(), "late");
         QCOMPARE(fixture.model.nextDue(), today.addDays(-1));
         QCOMPARE(fixture.model.lateCount(), 1);
+        QCOMPARE(fixture.model.dueToday(), QStringList{});
     }
 
     void editsTheFile() {

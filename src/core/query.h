@@ -24,6 +24,9 @@ std::optional<qsizetype> nextTodo(const TodoList &list, QDate today);
 // How deep a todo is nested: 0 for a top-level todo, 1 for its subtasks, and so on.
 int depthOf(const TodoList &list, qsizetype todo);
 
+// The open todos due on `day`, in file order: what the today column lists under the events.
+QList<qsizetype> dueOn(const TodoList &list, QDate day);
+
 // The top-level todos of a section, in file order: the milestones of a project. See
 // docs/design/project-today.md.
 QList<qsizetype> milestonesOf(const TodoList &list, qsizetype section);

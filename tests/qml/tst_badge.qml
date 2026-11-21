@@ -63,6 +63,17 @@ Item {
             }, 1000, `centre at ${pillCentre()}`);
         }
 
+        function test_showsTheNextEvent() {
+            const event = findChild(badge, "event");
+            verify(!event.visible);
+            badge.event = "15:00 Review";
+            verify(event.visible);
+            tryVerify(() => {
+                return Math.abs(pillCentre() - screen.width / 2) < 1;
+            }, 1000, "still centred");
+            badge.event = "";
+        }
+
         function test_staysCentredWhenTheAppMenuShrinks() {
             appMenu.implicitWidth = 50;
             tryVerify(() => {

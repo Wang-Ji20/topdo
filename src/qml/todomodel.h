@@ -32,6 +32,8 @@ class TodoModel : public QAbstractListModel {
     Q_PROPERTY(
         QString nextTitle READ nextTitle NOTIFY todosChanged) // the badge's todo; see nextTodo()
     Q_PROPERTY(QDate nextDue READ nextDue NOTIFY todosChanged)
+    // The titles of the open todos due today, for the today column.
+    Q_PROPERTY(QStringList dueToday READ dueToday NOTIFY todosChanged)
     // Whether undoRemove() has a removal to undo.
     Q_PROPERTY(bool canUndoRemove READ canUndoRemove NOTIFY canUndoRemoveChanged)
     // The last failure to read or write the file, or empty.
@@ -68,6 +70,7 @@ class TodoModel : public QAbstractListModel {
     [[nodiscard]] QString nextTitle() const;
     [[nodiscard]] QDate nextDue() const;
     [[nodiscard]] QString error() const { return m_error; }
+    [[nodiscard]] QStringList dueToday() const;
     [[nodiscard]] bool canUndoRemove() const { return !m_removed.isEmpty(); }
     // All todos of the file, for views other than this list, such as ProjectModel.
     [[nodiscard]] const TodoList &list() const { return m_list; }

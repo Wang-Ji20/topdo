@@ -47,6 +47,17 @@ int depthOf(const TodoList &list, qsizetype todo) {
     return depth;
 }
 
+QList<qsizetype> dueOn(const TodoList &list, QDate day) {
+    QList<qsizetype> due;
+    for (qsizetype i = 0; i < list.todos.size(); ++i) {
+        const Todo &todo = list.todos.at(i);
+        if (!todo.done && todo.due == day) {
+            due.append(i);
+        }
+    }
+    return due;
+}
+
 QList<qsizetype> milestonesOf(const TodoList &list, qsizetype section) {
     QList<qsizetype> milestones;
     for (qsizetype i = 0; i < list.todos.size(); ++i) {

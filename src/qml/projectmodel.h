@@ -16,7 +16,7 @@ class ProjectModel : public QObject {
     Q_OBJECT
     QML_ELEMENT
 
-    Q_PROPERTY(TodoModel *todos READ todos WRITE setTodos NOTIFY todosChanged)
+    Q_PROPERTY(topdo::TodoModel *todos READ todos WRITE setTodos NOTIFY todosChanged)
     // The project asked for, without its "+". If the file has no such project, the model shows
     // the first project.
     Q_PROPERTY(QString project READ project WRITE setProject NOTIFY projectChanged)

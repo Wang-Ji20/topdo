@@ -13,6 +13,8 @@ Item {
     id: badge
 
     required property TodoModel todos
+    // The day's next event, as "15:00 Review"; empty for none.
+    property string event: ""
 
     signal clicked
 
@@ -116,6 +118,25 @@ Item {
                 color: Kirigami.Theme.negativeTextColor
                 font.family: "JetBrains Mono"
                 font.pointSize: Kirigami.Theme.smallFont.pointSize
+            }
+
+            Rectangle {
+                visible: badge.event !== ""
+                Layout.fillHeight: true
+                Layout.topMargin: Kirigami.Units.smallSpacing
+                Layout.bottomMargin: Kirigami.Units.smallSpacing
+                implicitWidth: 1
+                color: badge.withAlpha(Kirigami.Theme.textColor, 0.3)
+            }
+
+            Text {
+                objectName: "event"
+                visible: badge.event !== ""
+                Layout.maximumWidth: Kirigami.Units.gridUnit * 10
+                text: badge.event
+                elide: Text.ElideRight
+                color: Kirigami.Theme.textColor
+                font.family: "Poppins"
             }
         }
 

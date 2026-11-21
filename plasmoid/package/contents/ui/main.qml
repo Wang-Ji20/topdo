@@ -3,7 +3,6 @@ pragma ComponentBehavior: Bound
 // A badge in the top bar that opens our own frameless panel, with KWin's blur behind it.
 // See docs/design/widget.md, "How it is built".
 import QtQuick
-import QtQuick.Layouts
 import org.kde.plasma.plasmoid
 import org.kde.plasma.core as PlasmaCore
 import org.kde.kirigami as Kirigami
@@ -17,6 +16,10 @@ PlasmoidItem {
 
     fullRepresentation: Badge {
         todos: todoModel
+        event: {
+            const next = todayModel.next >= 0 ? todayModel.events[todayModel.next] : null;
+            return next ? `${Qt.formatTime(next.start, "HH:mm")} ${next.title}` : "";
+        }
         onClicked: panel.visible = !panel.visible
     }
 
@@ -24,12 +27,18 @@ PlasmoidItem {
         id: todoModel
     }
 
+    // Today's events from the KDE calendar, for the today column and the badge.
+    TodayModel {
+        id: todayModel
+    }
+
     // The project column's project, remembered in the widget's settings.
     ProjectModel {
         id: projectModel
 
         todos: todoModel
-        project: Plasmoid.configuration.project
+        // The settings are a map with the keys of contents/config/main.xml, unknown to qmllint.
+        project: Plasmoid.configuration.project // qmllint disable missing-property
     }
 
     // The widget's global shortcut (its settings, "Keyboard Shortcuts") opens and closes the panel.
@@ -76,9 +85,12 @@ PlasmoidItem {
             height: implicitHeight
             todos: todoModel
             project: projectModel
+            day: todayModel
             fullHeight: Plasmoid.containment.availableScreenRect.height - Kirigami.Units.gridUnit * 2
             onCloseRequested: panel.visible = false
-            onProjectPicked: name => Plasmoid.configuration.project = name
+            onProjectPicked: name => {
+                Plasmoid.configuration.project = name; // qmllint disable missing-property
+            }
         }
     }
 }

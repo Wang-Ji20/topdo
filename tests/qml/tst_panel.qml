@@ -20,6 +20,16 @@ Item {
         todos: todoModel
     }
 
+    // A day without a calendar: what TodayModel offers, as plain values.
+    QtObject {
+        id: fakeDay
+
+        property var events: []
+        property date now: new Date()
+        property int next: -1
+        property string countdown: ""
+    }
+
     Panel {
         id: panel
 
@@ -27,6 +37,7 @@ Item {
         height: implicitHeight
         todos: todoModel
         project: projectModel
+        day: fakeDay
         fullHeight: 800
         onProjectPicked: name => {
             return projectModel.project = name;

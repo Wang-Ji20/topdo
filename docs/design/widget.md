@@ -19,9 +19,8 @@ large, built from circle, square and line.
 
 - A pill with a metal edge: a ring in the highlight colour, the next todo
   (see below), the number of open top-level todos, and, if any, the
-  number of late todos in the theme's warning colour. The next event of
-  the day joins it once the today column has real data; a stub event
-  would mislead in the real bar.
+  number of late todos in the theme's warning colour, then, after a
+  hairline, the day's next event (`15:00 Review`) if there is one.
 - The next todo is the most urgent one: the earliest late or due-today
   todo, otherwise the first open todo (`nextTodo()` in core).
 - It sits at the exact centre of the screen, whatever the width of the app
@@ -118,13 +117,14 @@ or "now" and the current one's steps; Enter ticks, Page Up and Page Down
 pick another project. The data and the keys are in
 [project-today.md](project-today.md).
 
-### Today (stub)
+### Today
 
-The day's schedule: the next event with a countdown, and the day as a
-strip with a ring at the current time. Open, it shows the whole day as a
-timeline: one row per event, past ones faded, the current one in the
-accent colour, and a line at the current time. Where this
-comes from is planned in [project-today.md](project-today.md).
+The day's events from the KDE calendar: the next event with a countdown,
+all-day events in one line, and the day as a strip from 08:00 to 20:00
+with a ring at the current time. Open, it shows the day as a timeline:
+one row per event, past ones faded, the current one in the accent colour,
+a line at the current time, and the todos due today under it. The data
+is in [project-today.md](project-today.md).
 
 ## Look
 
@@ -180,7 +180,7 @@ comes from is planned in [project-today.md](project-today.md).
 - **The panel's QML:** `Panel.qml` draws the slab, the columns and the
   hint line and handles the keys; each column is its own file
   (`TodoOverview.qml` and, when open, `TodoOpen.qml`; `ProjectColumn.qml`,
-  `TodayStub.qml`), and
+  `TodayColumn.qml`), and
   `Style.qml` holds the colours (from the Plasma theme), typefaces, sizes
   and the due-date label. The open todo column binds the model's filter
   to what is typed (not while editing) and clears it when it closes, so

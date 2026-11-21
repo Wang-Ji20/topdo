@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 
 // The head of a column: a square that fills when the column is picked, its number (which is
-// also its key), its name, and a "stub" tag for columns without real data yet.
+// also its key) and its name.
 RowLayout {
     id: label
 
@@ -10,7 +10,6 @@ RowLayout {
     required property int number
     required property string name
     property bool active: false
-    property bool stub: false
 
     spacing: style.unit * 0.55
 
@@ -36,14 +35,5 @@ RowLayout {
         font.family: label.style.mono
         font.pixelSize: label.style.unit * 0.62
         font.letterSpacing: label.style.unit * 0.1
-    }
-
-    Text {
-        visible: label.stub
-        text: "STUB"
-        color: label.style.dim
-        font.family: label.style.mono
-        font.pixelSize: label.style.unit * 0.55
-        font.letterSpacing: label.style.unit * 0.06
     }
 }

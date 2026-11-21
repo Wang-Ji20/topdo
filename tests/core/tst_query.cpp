@@ -74,6 +74,18 @@ class TestQuery : public QObject {
         QCOMPARE(topdo::filterTodos(list, {}, false), (QList<qsizetype>{1, 4, 0, 3, 2}));
     }
 
+    void findsTodosDueOnADay() {
+        const TodoList list = todosIn({
+            "a due:2026-11-19",
+            "x b due:2026-11-19",
+            "c due:2026-11-18",
+            "d",
+            "e due:2026-11-19",
+        });
+
+        QCOMPARE(topdo::dueOn(list, today()), (QList<qsizetype>{0, 4}));
+    }
+
     void findsMilestonesAndSteps() {
         const TodoList list = todosIn({
             "Paper +AidWalk id:1",          // 0: milestone

@@ -16,7 +16,8 @@ Each milestone ends in something usable. Bigger scope changes go here first.
    [docs/design/format.md](docs/design/format.md).
 4. **MCP server.** `topdo mcp` offers list, add and tick-off tools to AI
    assistants.
-5. **Project and today cards with real data.** Decide where they come from
-   (for example a git repository and a calendar) and fill the stubs.
+5. ~~**Project and today cards with real data.**~~ Done: the project card
+   shows a +project of todo.txt, the today card the KDE calendar. See
+   [docs/design/project-today.md](docs/design/project-today.md).
 6. **Grow with use.** Candidates: priorities in the panel, a global
    shortcut, more widgets in the popup.

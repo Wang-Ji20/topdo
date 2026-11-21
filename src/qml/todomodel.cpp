@@ -118,6 +118,14 @@ QDate TodoModel::nextDue() const {
     return next ? m_list.todos.at(*next).due.value_or(QDate()) : QDate();
 }
 
+QStringList TodoModel::dueToday() const {
+    QStringList titles;
+    for (const qsizetype todo : dueOn(m_list, QDate::currentDate())) {
+        titles.append(m_list.todos.at(todo).title);
+    }
+    return titles;
+}
+
 void TodoModel::add(const QString &text) {
     const QString line = oneLine(text);
     if (line.isEmpty()) {
