@@ -37,7 +37,7 @@ Item {
         todos: todoModel
         project: projectModel
         fullHeight: 800
-        onProjectPicked: (name) => {
+        onProjectPicked: name => {
             return projectModel.project = name;
         }
     }
@@ -58,11 +58,11 @@ Item {
             }
         }
 
-        function file() : string {
+        function file(): string {
             return Fixture.read(root.path);
         }
 
-        function rows() : int {
+        function rows(): int {
             return todoModel.rowCount();
         }
 
@@ -196,5 +196,4 @@ Item {
         name: "TodoOpen"
         when: windowShown
     }
-
 }

@@ -36,7 +36,7 @@ Item {
         todos: todoModel
         project: projectModel
         fullHeight: 800
-        onProjectPicked: (name) => {
+        onProjectPicked: name => {
             return projectModel.project = name;
         }
     }
@@ -50,7 +50,7 @@ Item {
             panel.forceActiveFocus();
         }
 
-        function column() : Item {
+        function column(): Item {
             return findChild(panel, "projectColumn");
         }
 
@@ -90,5 +90,4 @@ Item {
         name: "Project"
         when: windowShown
     }
-
 }

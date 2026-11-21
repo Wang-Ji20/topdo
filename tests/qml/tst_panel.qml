@@ -28,7 +28,7 @@ Item {
         todos: todoModel
         project: projectModel
         fullHeight: 800
-        onProjectPicked: (name) => {
+        onProjectPicked: name => {
             return projectModel.project = name;
         }
     }
@@ -102,5 +102,4 @@ Item {
         name: "Panel"
         when: windowShown
     }
-
 }

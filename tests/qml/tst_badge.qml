@@ -41,7 +41,6 @@ Item {
                 anchors.fill: parent
                 todos: todoModel
             }
-
         }
 
         Rectangle {
@@ -50,7 +49,6 @@ Item {
             implicitWidth: 150
             Layout.fillHeight: true
         }
-
     }
 
     TestCase {
@@ -79,5 +77,4 @@ Item {
         name: "Badge"
         when: windowShown
     }
-
 }

@@ -54,18 +54,16 @@ Window {
         todos: todoModel
         project: projectModel
         fullHeight: 640
-        onProjectPicked: (name) => {
+        onProjectPicked: name => {
             return projectModel.project = name;
         }
         onCloseRequested: Qt.quit()
         Component.onCompleted: {
-            const open = Qt.application.arguments.find((argument) => {
+            const open = Qt.application.arguments.find(argument => {
                 return argument.startsWith("--open=");
             });
             if (open)
                 panel.open(Number(open.slice("--open=".length)));
-
         }
     }
-
 }
