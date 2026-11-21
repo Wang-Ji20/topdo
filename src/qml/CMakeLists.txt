@@ -3,6 +3,8 @@ qt_add_qml_module(topdoqml
     URI io.github.wangji20.topdo
     VERSION 1.0
     SOURCES
+        projectmodel.cpp
+        projectmodel.h
         todomodel.cpp
         todomodel.h
         windoweffects.cpp

@@ -51,10 +51,11 @@ Edits are plain functions from a `Document` to the edited copy:
 `todo` is an index into what `findTodos` returns for the same
 document.
 
-Three small functions in `query.h` decide what the widget shows:
+Small functions in `query.h` decide what the widget shows:
 `filterTodos` (the todos the panel lists for a filter text), `nextTodo` (the
-todo on the badge: late, then due today, then the first open one) and
-`depthOf` (how deep a subtask is nested). The rules for where each edit acts are in
+todo on the badge: late, then due today, then the first open one),
+`depthOf` (how deep a subtask is nested), and `milestonesOf` and
+`subtasksOf` (a project's milestones and their steps). The rules for where each edit acts are in
 [design/format.md](design/format.md), rules 11 to 14. The line rules that
 both `findTodos` and the edits use live in one place, `todoline.h`.
 
@@ -81,8 +82,10 @@ logic of their own:
   depth, section and due date as roles, and what the badge needs as
   properties. Its `add`, `setDone`, `setText` and `remove` go through the
   store's `update`, taking todo numbers as `topdo list` shows them; a
-  number that no longer names a todo changes nothing. `WindowEffects`
-  asks KWin to blur behind the panel.
+  number that no longer names a todo changes nothing. `ProjectModel`
+  shows one project of the same `TodoModel` for the project column: its
+  milestones with their steps, and the list of projects to choose from.
+  `WindowEffects` asks KWin to blur behind the panel.
 - `cli` maps command-line arguments to store calls.
 - `mcp` maps MCP tool calls (JSON-RPC over standard input and output) to
   store calls.

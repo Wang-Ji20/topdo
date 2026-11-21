@@ -24,4 +24,11 @@ std::optional<qsizetype> nextTodo(const TodoList &list, QDate today);
 // How deep a todo is nested: 0 for a top-level todo, 1 for its subtasks, and so on.
 int depthOf(const TodoList &list, qsizetype todo);
 
+// The top-level todos of a section, in file order: the milestones of a project. See
+// docs/design/project-today.md.
+QList<qsizetype> milestonesOf(const TodoList &list, qsizetype section);
+
+// The direct subtasks of a todo, in file order: the steps of a milestone.
+QList<qsizetype> subtasksOf(const TodoList &list, qsizetype todo);
+
 } // namespace topdo

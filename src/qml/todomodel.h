@@ -69,6 +69,8 @@ class TodoModel : public QAbstractListModel {
     [[nodiscard]] QDate nextDue() const;
     [[nodiscard]] QString error() const { return m_error; }
     [[nodiscard]] bool canUndoRemove() const { return !m_removed.isEmpty(); }
+    // All todos of the file, for views other than this list, such as ProjectModel.
+    [[nodiscard]] const TodoList &list() const { return m_list; }
 
     Q_INVOKABLE void add(const QString &text);
     Q_INVOKABLE void addSubtask(int number, const QString &text);

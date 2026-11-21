@@ -1,3 +1,4 @@
+#include "projectmodel.h"
 #include "todomodel.h"
 
 #include <QAbstractItemModelTester>
@@ -7,6 +8,7 @@
 #include <QTemporaryDir>
 #include <QTest>
 
+using topdo::ProjectModel;
 using topdo::TodoModel;
 
 namespace {
@@ -193,6 +195,38 @@ class TestTodoModel : public QObject {
 
         writeFile(fixture.path, "and again\n");
         QTRY_COMPARE(titles(fixture.model), QStringList{"and again"});
+    }
+
+    // A project's milestones and steps, the first project when the asked-for one is missing, and
+    // the view following the file.
+    void showsAProject() {
+        Fixture fixture("Paper +AidWalk id:1\n"
+                        "x Run baselines p:1\n"
+                        "Write discussion p:1\n"
+                        "x Data +AidWalk\n"
+                        "Report +Work\n");
+        ProjectModel project;
+        project.setTodos(&fixture.model);
+
+        QCOMPARE(project.projects(), (QStringList{"AidWalk", "Work"}));
+        QCOMPARE(project.name(), "AidWalk");
+        QCOMPARE(project.milestones().size(), 2);
+        QCOMPARE(project.current(), 0);
+        const QVariantMap paper = project.milestones().at(0).toMap();
+        QCOMPARE(paper.value("title"), "Paper +AidWalk");
+        QCOMPARE(paper.value("number"), 1);
+        const QVariantList steps = paper.value("steps").toList();
+        QCOMPARE(steps.size(), 2);
+        QCOMPARE(steps.at(0).toMap().value("done"), true);
+        QCOMPARE(steps.at(1).toMap().value("number"), 3);
+
+        project.setProject("Work");
+        QCOMPARE(project.name(), "Work");
+        project.setProject("Gone");
+        QCOMPARE(project.name(), "AidWalk");
+
+        fixture.model.setDone(1, true);
+        QCOMPARE(project.current(), -1);
     }
 
     void reportsErrors() {

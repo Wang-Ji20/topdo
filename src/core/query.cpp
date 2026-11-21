@@ -47,4 +47,25 @@ int depthOf(const TodoList &list, qsizetype todo) {
     return depth;
 }
 
+QList<qsizetype> milestonesOf(const TodoList &list, qsizetype section) {
+    QList<qsizetype> milestones;
+    for (qsizetype i = 0; i < list.todos.size(); ++i) {
+        const Todo &todo = list.todos.at(i);
+        if (todo.section == section && todo.parent < 0) {
+            milestones.append(i);
+        }
+    }
+    return milestones;
+}
+
+QList<qsizetype> subtasksOf(const TodoList &list, qsizetype todo) {
+    QList<qsizetype> subtasks;
+    for (qsizetype i = 0; i < list.todos.size(); ++i) {
+        if (list.todos.at(i).parent == todo) {
+            subtasks.append(i);
+        }
+    }
+    return subtasks;
+}
+
 } // namespace topdo

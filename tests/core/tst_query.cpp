@@ -50,14 +50,11 @@ class TestQuery : public QObject {
         QTest::addColumn<int>("next"); // -1: none
 
         QTest::newRow("first open") << QStringList{"x a", "b", "c"} << 1;
-        QTest::newRow("due today beats first")
-            << QStringList{"a", "b due:2026-11-19"} << 1;
+        QTest::newRow("due today beats first") << QStringList{"a", "b due:2026-11-19"} << 1;
         QTest::newRow("late beats due today")
             << QStringList{"a due:2026-11-19", "b due:2026-11-18"} << 1;
-        QTest::newRow("due later doesn't count")
-            << QStringList{"a", "b due:2026-11-20"} << 0;
-        QTest::newRow("done doesn't count")
-            << QStringList{"a", "x b due:2026-11-01"} << 0;
+        QTest::newRow("due later doesn't count") << QStringList{"a", "b due:2026-11-20"} << 0;
+        QTest::newRow("done doesn't count") << QStringList{"a", "x b due:2026-11-01"} << 0;
         QTest::newRow("subtasks count") << QStringList{"a id:1", "b due:2026-11-18 p:1"} << 1;
         QTest::newRow("nothing open") << QStringList{"x a"} << -1;
     }
@@ -75,6 +72,21 @@ class TestQuery : public QObject {
         const TodoList list = todosIn({"a +Work", "b", "c +Home", "d +Work", "e"});
 
         QCOMPARE(topdo::filterTodos(list, {}, false), (QList<qsizetype>{1, 4, 0, 3, 2}));
+    }
+
+    void findsMilestonesAndSteps() {
+        const TodoList list = todosIn({
+            "Paper +AidWalk id:1",          // 0: milestone
+            "x Run baselines +AidWalk p:1", // 1: step
+            "Write discussion p:1",         // 2: step without the project
+            "Lunch",                        // 3: other section
+            "x Data +AidWalk",              // 4: milestone without steps
+            "Figure +AidWalk p:9",          // 5: unknown parent: top-level, a milestone
+        });
+
+        QCOMPARE(topdo::milestonesOf(list, 1), (QList<qsizetype>{0, 4, 5}));
+        QCOMPARE(topdo::subtasksOf(list, 0), (QList<qsizetype>{1, 2}));
+        QCOMPARE(topdo::subtasksOf(list, 4), QList<qsizetype>{});
     }
 
     void countsDepth() {
