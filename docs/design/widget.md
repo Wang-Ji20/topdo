@@ -74,9 +74,9 @@ overview, then closes the panel.
 │ ┌───────────────────────────────────────────────────┐ │
 │ │ todo  type to filter, or a new todo               │ │
 │ └───────────────────────────────────────────────────┘ │
-│  1 ▢ Buy milk                                         │
-│    WORK                                               │
-│  2 ▢ Write report  ↵ tick ⇧↵ subtask ⌃E edit ⇧⌦ remove│  <- highlighted row
+│  1 ▢ Call the bank                    @phone     Sat  │
+│  2 ▢ Buy milk                                         │  <- highlighted row
+│    HOLIDAY                                            │
 │  3 ▢ Plan trip                                        │
 │  5 ▢ └ Book hotel                           yesterday │
 │    ▸ done · 2                                         │
@@ -87,7 +87,12 @@ overview, then closes the panel.
   (case-insensitive, by substring) and adds a last row,
   `add "what you typed"`.
 - Numbers, the same as `topdo list`, appear only here.
-- The actions appear only on the highlighted row.
+- Beside the title, small: the todo's contexts and any project other
+  than its group (format.md, rule 8). A row looks the same highlighted
+  or not, so the title never reflows; the keys are in the hint line at
+  the bottom of the panel.
+- Subtasks sit right under their parent, in the parent's group, however
+  the lines are ordered in the file (format.md, rule 9).
 - Undo covers removals only, from the panel, for as long as Plasma runs.
   The lines go back at their old line number; if the file changed above
   them since, they may land in another place, but no line is lost.

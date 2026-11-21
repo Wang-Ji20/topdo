@@ -81,12 +81,9 @@ class TestTodoModel : public QObject {
         const Fixture fixture(exampleFile());
         const TodoModel &model = fixture.model;
 
-        QCOMPARE(titles(model),
-                 (QStringList{"Call the bank @phone",
-                              "Buy milk",
-                              "Plan trip +Holiday",
-                              "Book hotel +Holiday",
-                              "Write report +Work"}));
+        QCOMPARE(
+            titles(model),
+            (QStringList{"Call the bank", "Buy milk", "Plan trip", "Book hotel", "Write report"}));
         QCOMPARE(role(model, 3, TodoModel::NumberRole), 5);
         QCOMPARE(role(model, 3, TodoModel::DepthRole), 1);
         QCOMPARE(role(model, 3, TodoModel::SectionRole), "Holiday");
@@ -94,6 +91,8 @@ class TestTodoModel : public QObject {
         QCOMPARE(role(model, 0, TodoModel::TextRole), "Call the bank @phone due:2026-11-21");
         QCOMPARE(role(model, 0, TodoModel::DueRole), QDate(2026, 11, 21));
         QVERIFY(!role(model, 1, TodoModel::DueRole).isValid());
+        QCOMPARE(role(model, 0, TodoModel::TagsRole), QStringList{"@phone"});
+        QCOMPARE(role(model, 2, TodoModel::TagsRole), QStringList{});
         QCOMPARE(model.openCount(), 4);
         QCOMPARE(model.doneCount(), 2);
         QCOMPARE(model.totalCount(), 7);
@@ -107,7 +106,7 @@ class TestTodoModel : public QObject {
         model.setShowDone(true);
         QCOMPARE(model.rowCount(), 7);
         model.setFilter("BOOK");
-        QCOMPARE(titles(model), (QStringList{"Book flight +Holiday", "Book hotel +Holiday"}));
+        QCOMPARE(titles(model), (QStringList{"Book flight", "Book hotel"}));
     }
 
     void picksTheNextTodo() {
@@ -141,10 +140,8 @@ class TestTodoModel : public QObject {
                             "2026-11-18 Write report +Work\n"
                             "x 2026-11-19 Renew passport pri:B\n"
                             "Pay the rent\n"));
-        QCOMPARE(
-            titles(model),
-            (QStringList{
-                "Call the bank @phone", "Find the branch", "Pay the rent", "Write report +Work"}));
+        QCOMPARE(titles(model),
+                 (QStringList{"Call the bank", "Find the branch", "Pay the rent", "Write report"}));
     }
 
     // Undo puts removed todos back, the latest first, and a stale number leaves nothing to undo.
@@ -214,7 +211,7 @@ class TestTodoModel : public QObject {
         QCOMPARE(project.milestones().size(), 2);
         QCOMPARE(project.current(), 0);
         const QVariantMap paper = project.milestones().at(0).toMap();
-        QCOMPARE(paper.value("title"), "Paper +AidWalk");
+        QCOMPARE(paper.value("title"), "Paper");
         QCOMPARE(paper.value("number"), 1);
         const QVariantList steps = paper.value("steps").toList();
         QCOMPARE(steps.size(), 2);

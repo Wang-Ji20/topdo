@@ -48,6 +48,7 @@ class TodoModel : public QAbstractListModel {
         DepthRole,
         SectionRole,
         DueRole,
+        TagsRole, // shownTags(): contexts and projects other than the group's, with "@" and "+"
     };
     Q_ENUM(Role)
 

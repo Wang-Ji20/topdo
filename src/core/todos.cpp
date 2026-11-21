@@ -24,7 +24,7 @@ std::optional<QDate> dueDate(const QString &text) {
 }
 
 // Whether a word is one of the tags that the title leaves out; rule 8.
-bool isHiddenTag(const QString &word) {
+bool isTitleTag(const QString &word) {
     for (const QLatin1StringView key : {"id:"_L1, "p:"_L1, "pri:"_L1}) {
         if (word.startsWith(key) && word.size() > key.size()) {
             return true;
@@ -34,26 +34,55 @@ bool isHiddenTag(const QString &word) {
     return due && dueDate(word).has_value();
 }
 
-std::optional<QString> firstProject(const QString &text) {
-    for (const QString &word : wordsOf(text)) {
-        if (word.startsWith(u'+') && word.size() > 1) {
-            return word.sliced(1);
-        }
-    }
-    return std::nullopt;
+// A +project or @context word: the marker and at least one character.
+bool isMarked(const QString &word, QChar marker) { return word.size() > 1 && word.at(0) == marker; }
+
+bool isHiddenWord(const QString &word) {
+    return isTitleTag(word) || isMarked(word, u'+') || isMarked(word, u'@');
 }
 
-qsizetype sectionOf(QList<Section> &sections, const std::optional<QString> &project) {
-    if (!project) {
+// The words with the marker, without it.
+QStringList markedWords(const QString &text, QChar marker) {
+    QStringList found;
+    for (const QString &word : wordsOf(text)) {
+        if (isMarked(word, marker)) {
+            found.append(word.sliced(1));
+        }
+    }
+    return found;
+}
+
+qsizetype sectionOf(QList<Section> &sections, const QStringList &projects) {
+    if (projects.isEmpty()) {
         return 0;
     }
     for (qsizetype i = 1; i < sections.size(); ++i) {
-        if (sections.at(i).title == *project) {
+        if (sections.at(i).title == projects.first()) {
             return i;
         }
     }
-    sections.append({.title = *project});
+    sections.append({.title = projects.first()});
     return sections.size() - 1;
+}
+
+qsizetype topLevelOf(const QList<Todo> &todos, qsizetype todo) {
+    while (todos.at(todo).parent >= 0) {
+        todo = todos.at(todo).parent;
+    }
+    return todo;
+}
+
+// Rule 9: a top-level todo's group is its first project; a subtask's is its top-level todo's.
+void groupTodos(TodoList &list) {
+    for (Todo &todo : list.todos) {
+        if (todo.parent < 0) {
+            todo.section = sectionOf(list.sections, todo.projects);
+        }
+    }
+    for (qsizetype i = 0; i < list.todos.size(); ++i) {
+        const qsizetype top = topLevelOf(list.todos, i);
+        list.todos[i].section = list.todos.at(top).section;
+    }
 }
 
 // Whether following parents from `todo` comes back to it; rule 6.
@@ -99,16 +128,19 @@ TodoList findTodos(const Document &document) {
         list.todos.append({
             .line = i,
             .parent = -1,
-            .section = sectionOf(list.sections, firstProject(parts.text)),
+            .section = 0,
             .done = parts.done,
             .text = parts.text,
-            .title = withoutWords(parts.text, isHiddenTag),
+            .title = withoutWords(parts.text, isHiddenWord),
+            .projects = markedWords(parts.text, u'+'),
+            .contexts = markedWords(parts.text, u'@'),
             .id = tagValue(parts.text, QStringLiteral("id")).value_or(QString()),
             .due = dueDate(parts.text),
         });
         parentIds.append(tagValue(parts.text, QStringLiteral("p")).value_or(QString()));
     }
     linkSubtasks(list.todos, parentIds);
+    groupTodos(list);
     return list;
 }
 

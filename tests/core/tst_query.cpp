@@ -74,6 +74,27 @@ class TestQuery : public QObject {
         QCOMPARE(topdo::filterTodos(list, {}, false), (QList<qsizetype>{1, 4, 0, 3, 2}));
     }
 
+    // A subtask comes right after its parent, wherever its line is.
+    void listsSubtasksUnderTheirParent() {
+        const TodoList list = todosIn({"c p:1", "a +Work id:1", "x", "b id:2 p:1", "d p:2", "e"});
+
+        QCOMPARE(topdo::filterTodos(list, {}, false), (QList<qsizetype>{2, 5, 1, 0, 3, 4}));
+    }
+
+    void filtersByProjectAndContext() {
+        const TodoList list = todosIn({"a +Work", "b @phone", "c"});
+
+        QCOMPARE(topdo::filterTodos(list, "work", false), QList<qsizetype>{0});
+        QCOMPARE(topdo::filterTodos(list, "PHO", false), QList<qsizetype>{1});
+    }
+
+    void showsTagsOtherThanTheGroup() {
+        const TodoList list = todosIn({"a +Work @phone +Home id:1", "b +Home p:1"});
+
+        QCOMPARE(topdo::shownTags(list, 0), (QStringList{"@phone", "+Home"}));
+        QCOMPARE(topdo::shownTags(list, 1), QStringList{"+Home"});
+    }
+
     void findsTodosDueOnADay() {
         const TodoList list = todosIn({
             "a due:2026-11-19",

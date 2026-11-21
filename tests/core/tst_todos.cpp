@@ -44,6 +44,8 @@ Todo todo(qsizetype line,
           bool done,
           const QString &text,
           const QString &title,
+          const QStringList &projects = {},
+          const QStringList &contexts = {},
           const QString &id = {},
           std::optional<QDate> due = {}) {
     return {
@@ -53,6 +55,8 @@ Todo todo(qsizetype line,
         .done = done,
         .text = text,
         .title = title,
+        .projects = projects,
+        .contexts = contexts,
         .id = id,
         .due = due,
     };
@@ -84,14 +88,16 @@ class TestTodos : public QObject {
                  0,
                  false,
                  "Call the bank @phone due:2026-11-21",
-                 "Call the bank @phone",
+                 "Call the bank",
+                 {},
+                 {"phone"},
                  "",
                  QDate(2026, 11, 21)),
             todo(1, -1, 0, false, "Buy milk", "Buy milk"),
-            todo(2, -1, 1, false, "Plan trip +Holiday id:1", "Plan trip +Holiday", "1"),
-            todo(3, 2, 1, true, "Book flight +Holiday p:1", "Book flight +Holiday"),
-            todo(4, 2, 1, false, "Book hotel +Holiday p:1", "Book hotel +Holiday"),
-            todo(5, -1, 2, false, "Write report +Work", "Write report +Work"),
+            todo(2, -1, 1, false, "Plan trip +Holiday id:1", "Plan trip", {"Holiday"}, {}, "1"),
+            todo(3, 2, 1, true, "Book flight +Holiday p:1", "Book flight", {"Holiday"}),
+            todo(4, 2, 1, false, "Book hotel +Holiday p:1", "Book hotel", {"Holiday"}),
+            todo(5, -1, 2, false, "Write report +Work", "Write report", {"Work"}),
             todo(6, -1, 0, true, "Renew passport pri:B", "Renew passport"),
         };
         QCOMPARE(list.todos, expected);
@@ -167,6 +173,30 @@ class TestTodos : public QObject {
             sections.append(each.section);
         }
         QCOMPARE(sections, (QList<qsizetype>{1, 2, 0, 0, 0, 1}));
+        QCOMPARE(list.todos.at(0).projects, (QStringList{"Work", "Home"}));
+        QCOMPARE(list.todos.at(0).title, "a");
+        QCOMPARE(list.todos.at(3).title, "d 2+2");
+        QCOMPARE(list.todos.at(4).title, "e +");
+    }
+
+    // A subtask is in its top-level todo's group, whatever its own projects; only top-level
+    // todos make groups.
+    void groupsSubtasksWithTheirTopLevelTodo() {
+        const TodoList list = todosIn({"a +Work id:1", "b p:1 id:2", "c +Home p:2", "d"});
+
+        QCOMPARE(list.sections, (QList<Section>{{.title = ""}, {.title = "Work"}}));
+        QList<qsizetype> sections;
+        for (const Todo &each : list.todos) {
+            sections.append(each.section);
+        }
+        QCOMPARE(sections, (QList<qsizetype>{1, 1, 1, 0}));
+    }
+
+    void readsContexts() {
+        const Todo first = todosIn({"Call @phone @home mail@example.com"}).todos.first();
+
+        QCOMPARE(first.contexts, (QStringList{"phone", "home"}));
+        QCOMPARE(first.title, "Call mail@example.com");
     }
 
     void linksSubtasks_data() {
@@ -241,6 +271,23 @@ class TestTodos : public QObject {
     }
 
     // A parent has the id its subtask's p: tag names, and parents never lead in a circle.
+    // A subtask is in its parent's group, and the title holds no project or context.
+    void groupsAndTitlesAreSound() {
+        forRandomFiles([](const Document &document, const QString &where) {
+            const TodoList list = topdo::findTodos(document);
+            for (const Todo &each : list.todos) {
+                if (each.parent >= 0) {
+                    QVERIFY2(each.section == list.todos.at(each.parent).section, qPrintable(where));
+                }
+                for (const QString &word : each.title.split(u' ')) {
+                    const bool marked =
+                        word.size() > 1 && (word.startsWith(u'+') || word.startsWith(u'@'));
+                    QVERIFY2(!marked, qPrintable(where + ": " + each.title));
+                }
+            }
+        });
+    }
+
     void parentsAreSound() {
         forRandomFiles([](const Document &document, const QString &where) {
             const TodoList list = topdo::findTodos(document);

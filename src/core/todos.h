@@ -5,6 +5,7 @@
 #include <QDate>
 #include <QList>
 #include <QString>
+#include <QStringList>
 
 #include <optional>
 
@@ -24,9 +25,11 @@ struct Todo {
     qsizetype parent = -1; // index in TodoList::todos; -1 for a top-level todo
     qsizetype section = 0; // index in TodoList::sections
     bool done = false;
-    QString text;  // everything after the priority and the dates, as written
-    QString title; // the text without the due:, id:, p: and pri: tags, for display
-    QString id;    // the value of its id: tag, or empty
+    QString text;         // everything after the priority and the dates, as written
+    QString title;        // the text without the due:, id:, p: and pri: tags, projects and contexts
+    QStringList projects; // the +project words, without the "+", in text order
+    QStringList contexts; // the @context words, without the "@", in text order
+    QString id;           // the value of its id: tag, or empty
     std::optional<QDate> due;
 
     friend bool operator==(const Todo &, const Todo &) = default;

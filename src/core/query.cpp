@@ -4,18 +4,83 @@
 
 namespace topdo {
 
-QList<qsizetype> filterTodos(const TodoList &list, const QString &filter, bool showDone) {
-    QList<qsizetype> shown;
+QList<qsizetype> milestonesOf(const TodoList &list, qsizetype section) {
+    QList<qsizetype> milestones;
     for (qsizetype i = 0; i < list.todos.size(); ++i) {
         const Todo &todo = list.todos.at(i);
-        const bool visible = filter.isEmpty() ? (showDone || !todo.done)
-                                              : todo.title.contains(filter, Qt::CaseInsensitive);
-        if (visible) {
-            shown.append(i);
+        if (todo.section == section && todo.parent < 0) {
+            milestones.append(i);
         }
     }
-    std::ranges::stable_sort(shown, {}, [&list](qsizetype i) { return list.todos.at(i).section; });
+    return milestones;
+}
+
+QList<qsizetype> subtasksOf(const TodoList &list, qsizetype todo) {
+    QList<qsizetype> subtasks;
+    for (qsizetype i = 0; i < list.todos.size(); ++i) {
+        if (list.todos.at(i).parent == todo) {
+            subtasks.append(i);
+        }
+    }
+    return subtasks;
+}
+
+namespace {
+
+bool matches(const Todo &todo, const QString &filter) {
+    if (todo.title.contains(filter, Qt::CaseInsensitive)) {
+        return true;
+    }
+    const auto contains = [&filter](const QString &word) {
+        return word.contains(filter, Qt::CaseInsensitive);
+    };
+    return std::ranges::any_of(todo.projects, contains) ||
+           std::ranges::any_of(todo.contexts, contains);
+}
+
+bool isShown(const Todo &todo, const QString &filter, bool showDone) {
+    return filter.isEmpty() ? (showDone || !todo.done) : matches(todo, filter);
+}
+
+// Appends a todo and then its subtasks, depth first, keeping those that are shown.
+void appendTree(const TodoList &list,
+                qsizetype todo,
+                const QString &filter,
+                bool showDone,
+                QList<qsizetype> &shown) {
+    if (isShown(list.todos.at(todo), filter, showDone)) {
+        shown.append(todo);
+    }
+    for (const qsizetype subtask : subtasksOf(list, todo)) {
+        appendTree(list, subtask, filter, showDone, shown);
+    }
+}
+
+} // namespace
+
+QList<qsizetype> filterTodos(const TodoList &list, const QString &filter, bool showDone) {
+    QList<qsizetype> shown;
+    for (qsizetype section = 0; section < list.sections.size(); ++section) {
+        for (const qsizetype top : milestonesOf(list, section)) {
+            appendTree(list, top, filter, showDone, shown);
+        }
+    }
     return shown;
+}
+
+QStringList shownTags(const TodoList &list, qsizetype todo) {
+    const Todo &item = list.todos.at(todo);
+    const QString group = list.sections.at(item.section).title;
+    QStringList tags;
+    for (const QString &context : item.contexts) {
+        tags.append(u'@' + context);
+    }
+    for (const QString &project : item.projects) {
+        if (project != group) {
+            tags.append(u'+' + project);
+        }
+    }
+    return tags;
 }
 
 std::optional<qsizetype> nextTodo(const TodoList &list, QDate today) {
@@ -56,27 +121,6 @@ QList<qsizetype> dueOn(const TodoList &list, QDate day) {
         }
     }
     return due;
-}
-
-QList<qsizetype> milestonesOf(const TodoList &list, qsizetype section) {
-    QList<qsizetype> milestones;
-    for (qsizetype i = 0; i < list.todos.size(); ++i) {
-        const Todo &todo = list.todos.at(i);
-        if (todo.section == section && todo.parent < 0) {
-            milestones.append(i);
-        }
-    }
-    return milestones;
-}
-
-QList<qsizetype> subtasksOf(const TodoList &list, qsizetype todo) {
-    QList<qsizetype> subtasks;
-    for (qsizetype i = 0; i < list.todos.size(); ++i) {
-        if (list.todos.at(i).parent == todo) {
-            subtasks.append(i);
-        }
-    }
-    return subtasks;
 }
 
 } // namespace topdo

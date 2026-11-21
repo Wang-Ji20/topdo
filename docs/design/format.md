@@ -23,7 +23,7 @@ topdo sees this as:
 
 ```
 (no project)
-  [ ] Call the bank @phone        due 2026-11-21
+  [ ] Call the bank   @phone      due 2026-11-21
   [ ] Buy milk
   [x] Renew passport
 Holiday
@@ -71,15 +71,19 @@ Work
 7. **`pri:A` is the priority of a done todo**, as the spec suggests: it
    keeps the priority while the todo is done.
 8. **The title is the text without the `due:`, `id:`, `p:` and `pri:`
-   tags.** The panel shows the title; projects and contexts stay in it.
+   tags, the projects and the contexts.** Other words, `key:value` ones
+   such as a URL included, stay. The badge shows the title alone; the panel shows the
+   title and, beside it as small tags, the contexts and any project other
+   than the todo's group.
 
 ### Projects group the list
 
-9. **A todo belongs to its first project.** The panel lists the todos
-   without a project first, then one group per project, in the order each
-   project first appears in the file. Inside a group, todos keep their
-   order in the file. A subtask belongs to its own first project, like any
-   todo.
+9. **A top-level todo belongs to its first project; a subtask belongs to
+   the group of its top-level todo**, whatever projects it names. The
+   panel lists the todos without a project first, then one group per
+   project, in the order each project first appears on a top-level todo.
+   Inside a group, each todo comes right before its subtasks, and todos
+   at the same level keep their order in the file.
 
 ### Numbers
 
@@ -139,6 +143,7 @@ Work
 |---|---|
 | todo.txt | Markdown task lists (the format before 2026-11-21): no other todo apps read them, and the rules had to invent nesting, sections and comments |
 | Subtasks with `id:` and `p:` tags | Indented lines: not todo.txt, other apps misread them |
+| A subtask stays under its parent, in its parent's group | Group subtasks by their own project: a subtask without the project would land far from its parent |
 | Group by the first project | By heading: todo.txt has none; by context: projects say what a todo is for |
 | A manual file in the folder | A comment preamble in the file: todo.txt has no comments, so other apps would show it as todos |
 | Tick writes a completion date | No date: a done todo with a creation date would then be ambiguous, which the spec warns about |

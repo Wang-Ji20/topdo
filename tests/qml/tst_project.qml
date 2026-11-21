@@ -68,7 +68,7 @@ Item {
         function test_overviewShowsTheCurrentMilestone() {
             compare(projectModel.name, "AidWalk");
             const shown = column();
-            compare(shown.currentMilestone.title, "Paper +AidWalk");
+            compare(shown.currentMilestone.title, "Paper");
             compare(shown.nextStep.title, "Write discussion");
         }
 

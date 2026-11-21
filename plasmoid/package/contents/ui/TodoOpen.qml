@@ -282,6 +282,7 @@ FocusScope {
                 required property bool done
                 required property int depth
                 required property var due
+                required property list<string> tags
                 readonly property bool highlighted: index === column.highlight
                 readonly property var dueLabel: column.style.dueLabel(due)
 
@@ -342,9 +343,12 @@ FocusScope {
                         font.pixelSize: column.style.unit * 0.85
                     }
 
+                    // Contexts and other projects, small: they belong to the todo but aren't its
+                    // title. The keys are in the panel's hint line, so nothing here changes with
+                    // the highlight and the title never reflows.
                     Text {
-                        visible: row.highlighted
-                        text: `↵ ${row.done ? "untick" : "tick"}   ⇧↵ subtask   ⌃E edit   ⇧⌦ remove`
+                        visible: row.tags.length > 0
+                        text: row.tags.join("  ")
                         color: column.style.dim
                         font.family: column.style.mono
                         font.pixelSize: column.style.unit * 0.55

@@ -48,6 +48,8 @@ QVariant TodoModel::data(const QModelIndex &index, int role) const {
         return m_list.sections.at(item.section).title;
     case DueRole:
         return item.due ? QVariant(*item.due) : QVariant();
+    case TagsRole:
+        return shownTags(m_list, todo);
     }
     return {};
 }
@@ -61,6 +63,7 @@ QHash<int, QByteArray> TodoModel::roleNames() const {
         {DepthRole, "depth"},
         {SectionRole, "section"},
         {DueRole, "due"},
+        {TagsRole, "tags"},
     };
 }
 

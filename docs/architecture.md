@@ -54,7 +54,8 @@ Edits are plain functions from a `Document` to the edited copy:
 document.
 
 Small functions in `query.h` decide what the widget shows:
-`filterTodos` (the todos the panel lists for a filter text), `nextTodo` (the
+`filterTodos` (the todos the panel lists for a filter text, each under its
+parent), `shownTags` (the small tags beside a title), `nextTodo` (the
 todo on the badge: late, then due today, then the first open one),
 `depthOf` (how deep a subtask is nested), and `milestonesOf` and
 `subtasksOf` (a project's milestones and their steps). The rules for where each edit acts are in
@@ -88,7 +89,7 @@ logic of their own:
 - `qml` is the QML module `io.github.wangji20.topdo` that the plasmoid
   imports. `TodoModel` lists the todos the panel shows (after
   `filterTodos`), with each todo's number, title, text, done state,
-  depth, section and due date as roles, and what the badge needs as
+  depth, section, due date and tags as roles, and what the badge needs as
   properties. Its `add`, `setDone`, `setText` and `remove` go through the
   store's `update`, taking todo numbers as `topdo list` shows them; a
   number that no longer names a todo changes nothing. `ProjectModel`
